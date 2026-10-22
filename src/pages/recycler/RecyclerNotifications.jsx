@@ -37,18 +37,18 @@ export default function RecyclerNotifications() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto bg-white text-[#222222]">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#203128]">{t('navNotifications')}</h1>
-          <p className="text-xs sm:text-sm text-[#718078]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#222222]">{t('navNotifications')}</h1>
+          <p className="text-xs sm:text-sm text-[#555555]">
             {t('availableRequestsDesc')}
           </p>
         </div>
 
         <button
           onClick={markAllRead}
-          className="px-4 py-2 bg-white hover:bg-[#DDEBD8] text-[#244936] border border-[#3F7655]/20 rounded-xl font-bold text-xs transition cursor-pointer self-start sm:self-auto shadow-sm"
+          className="px-4 py-2 bg-[#F5FBF7] hover:border-[#B8D9C8] text-[#222222] border-2 border-[#D6E8DF] rounded-lg font-bold text-xs transition cursor-pointer self-start sm:self-auto"
         >
           {t('unreadNotifications')}
         </button>
@@ -58,25 +58,30 @@ export default function RecyclerNotifications() {
         {list.map((item) => (
           <div
             key={item.id}
-            className={`p-5 rounded-[24px] border transition flex items-start gap-4 ${
+            className={`p-5 rounded-lg border-2 transition flex items-start gap-4 ${
               item.unread
-                ? 'bg-white border-[#3F7655]/30 shadow-sm'
-                : 'bg-[#FAF8F2] border-[#3F7655]/10 opacity-80'
+                ? 'bg-[#EFF8F2] border-[#B8D9C8]'
+                : 'bg-[#F5FBF7] border-[#D6E8DF]'
             }`}
           >
-            <div className="p-2.5 rounded-xl bg-[#DDEBD8] shrink-0 mt-0.5 text-[#3F7655]">
+            <div className="p-2.5 rounded-lg bg-white border-2 border-[#D6E8DF] shrink-0 mt-0.5 text-[#1F6F5F]">
               {item.type === 'MATCH' ? <ShieldCheck className="w-4 h-4" /> : item.type === 'COMPLIANCE' ? <CheckCircle2 className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
             </div>
 
             <div className="flex-1 space-y-1">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-[#203128] font-black">{t(item.title)}</h3>
-                <span className="text-[11px] text-[#718078] flex items-center gap-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-[#222222]">{t(item.title)}</h3>
+                  {item.unread && (
+                    <span className="w-2 h-2 rounded-full bg-[#1F6F5F]" />
+                  )}
+                </div>
+                <span className="text-[11px] text-[#555555] flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {item.time}
                 </span>
               </div>
-              <p className="text-xs text-[#718078] leading-relaxed">{t(item.message)}</p>
+              <p className="text-xs text-[#555555] leading-relaxed">{t(item.message)}</p>
             </div>
           </div>
         ))}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Scale, DollarSign, CheckCircle2, XCircle, 
   AlertTriangle, Calculator, ShieldCheck, TrendingDown, 
-  TrendingUp, RefreshCw, HelpCircle, Info, MapPin, Loader2, Navigation
+  TrendingUp, RefreshCw, HelpCircle, Info, MapPin, Loader2, Navigation, Clock
 } from 'lucide-react';
 import { structuredEWasteCategories } from '../../data/scrapPrices';
 import { calculateFairPriceRange } from '../../utils/rulesEngine';
@@ -216,26 +216,26 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto bg-white text-[#222222]">
       {/* Back Button */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/collector/dashboard')}
-          className="px-4 py-2 text-xs font-bold text-[#203128] bg-white border border-[#3F7655]/20 rounded-xl hover:bg-[#DDEBD8]/50 transition flex items-center gap-2 cursor-pointer shadow-sm"
+          className="px-4 py-2 text-xs font-bold text-[#222222] bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg hover:border-[#B8D9C8] transition flex items-center gap-2 cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4 text-[#3F7655]" />
+          <ArrowLeft className="w-4 h-4 text-[#1F6F5F]" />
           <span>{t('backToDashboard', 'Back to Dashboard')}</span>
         </button>
       </div>
 
       {/* Form Card */}
-      <div className="bg-white p-6 sm:p-10 rounded-[32px] border border-[#3F7655]/20 shadow-lg space-y-6">
+      <div className="bg-[#F5FBF7] p-6 sm:p-10 rounded-lg border-2 border-[#D6E8DF] space-y-6">
         <div>
-          <span className="text-[10px] font-black uppercase text-[#3F7655] tracking-widest bg-[#DDEBD8] px-3 py-1 rounded-full">
+          <span className="text-[10px] font-bold uppercase text-[#1F6F5F] tracking-widest bg-white border-2 border-[#D6E8DF] px-3 py-1 rounded">
             {t('pricingAndValidationEngine', 'E-Waste Manifest & Fair Pricing Engine')}
           </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#203128] mt-2">{t('createEWasteRequest', 'Create E-Waste Request')}</h1>
-          <p className="text-xs sm:text-sm text-[#718078]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#222222] mt-3">{t('createEWasteRequest', 'Create E-Waste Request')}</h1>
+          <p className="text-xs sm:text-sm text-[#555555] mt-1">
             {t('eWasteManifestSubtitle', 'Declare your collected e-waste volume, evaluate recycler quoted rates with automated backend pricing validation, and broadcast requests to certified CPCB recyclers.')}
           </p>
         </div>
@@ -244,13 +244,13 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
           {/* Row 1: Category and Material */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">
+              <label className="text-xs font-bold text-[#222222] block mb-1">
                 {t('eWasteCategory', 'E-Waste Category')} *
               </label>
               <select
                 value={category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-bold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               >
                 {structuredEWasteCategories.map((c, i) => (
                   <option key={i} value={c.name}>{tCategory(c.name)}</option>
@@ -259,7 +259,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
             </div>
 
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">
+              <label className="text-xs font-bold text-[#222222] block mb-1">
                 {t('materialDescription', 'Material Description / Material Type')} *
               </label>
               <input
@@ -268,7 +268,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
                 value={material}
                 onChange={(e) => setMaterial(e.target.value)}
                 placeholder="e.g. Mixed motherboards & server boards"
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
@@ -276,7 +276,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
           {/* Row 2: Lot Weight / Quantity, Unit, Condition */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">
+              <label className="text-xs font-bold text-[#222222] block mb-1">
                 {t('lotWeight', 'Lot Weight (Quantity)')} *
               </label>
               <input
@@ -286,18 +286,18 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
                 required
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-bold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">
+              <label className="text-xs font-bold text-[#222222] block mb-1">
                 {t('unitOfMeasurement', 'Unit of Measurement')}
               </label>
               <select
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-bold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               >
                 <option value="kg">{t('unitKg', 'Kilograms (kg)')}</option>
                 <option value="units">{t('unitUnits', 'Units / Pieces')}</option>
@@ -306,13 +306,13 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
             </div>
 
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">
+              <label className="text-xs font-bold text-[#222222] block mb-1">
                 {t('conditionLabel', 'Condition')}
               </label>
               <select
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-bold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               >
                 <option value="Non-working / Scrap">{tCondition('Non-working / Scrap')}</option>
                 <option value="Intact / Used">{tCondition('Working / Repairable')}</option>
@@ -325,14 +325,14 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-extrabold text-[#203128]">
+                <label className="text-xs font-bold text-[#222222]">
                   {t('storageLocationHub', 'Storage Location / Hub')} *
                 </label>
                 <button
                   type="button"
                   onClick={handleDetectLocation}
                   disabled={isLocating}
-                  className="text-[11px] font-bold text-[#3F7655] hover:text-[#244936] flex items-center gap-1 cursor-pointer"
+                  className="text-[11px] font-bold text-[#1F6F5F] hover:text-[#2FA084] flex items-center gap-1 cursor-pointer"
                 >
                   {isLocating ? (
                     <>
@@ -353,10 +353,10 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder={t('placeholderLocation')}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               />
               {locationSuccess && (
-                <p className="text-[10px] font-bold text-emerald-700 mt-1 flex items-center gap-1">
+                <p className="text-[10px] font-bold text-[#1F6F5F] mt-1 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
                   <span>{locationSuccess}</span>
                 </p>
@@ -364,7 +364,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
             </div>
 
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">
+              <label className="text-xs font-bold text-[#222222] block mb-1">
                 {t('collectionDate', 'Collection Date')} *
               </label>
               <input
@@ -372,24 +372,24 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
                 required
                 value={collectionDate}
                 onChange={(e) => setCollectionDate(e.target.value)}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
 
           {/* QUOTED AMOUNT & LIVE BACKEND PRICING VALIDATION */}
-          <div className="p-6 sm:p-7 bg-[#FAF8F2] rounded-[28px] border-2 border-[#3F7655]/30 shadow-sm space-y-5">
+          <div className="p-6 sm:p-7 bg-[#EFF8F2] rounded-lg border-2 border-[#D6E8DF] space-y-5">
             {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#3F7655]/15 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#D6E8DF] pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-[#3F7655] text-white flex items-center justify-center font-bold shadow-sm">
+                <div className="w-8 h-8 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center font-bold">
                   <DollarSign className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#3F7655]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#1F6F5F]">
                     {t('pricingAndValidationEngine', 'Pricing & Validation Engine')}
                   </span>
-                  <h3 className="text-base font-black text-[#203128]">
+                  <h3 className="text-base font-bold text-[#222222]">
                     {t('quotedAmountSection', 'Quoted Amount')}
                   </h3>
                 </div>
@@ -397,12 +397,12 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
 
               <div className="flex items-center gap-2">
                 {isValidating && (
-                  <span className="text-[11px] font-bold text-[#3F7655] flex items-center gap-1 bg-[#DDEBD8] px-2.5 py-1 rounded-full animate-pulse">
+                  <span className="text-[11px] font-bold text-[#1F6F5F] flex items-center gap-1 bg-white border-2 border-[#D6E8DF] px-2.5 py-1 rounded">
                     <RefreshCw className="w-3 h-3 animate-spin" />
                     {t('validatingWithBackend', 'Validating with Backend...')}
                   </span>
                 )}
-                <span className="text-[10px] font-black uppercase text-[#3F7655] bg-[#DDEBD8] px-2.5 py-1 rounded-full">
+                <span className="text-[10px] font-bold uppercase text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2.5 py-1 rounded">
                   {t('toleranceLabel', 'Tolerance')}: ±{displayTolerance}%
                 </span>
               </div>
@@ -410,12 +410,12 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
 
             {/* Offline Price Badge */}
             {!online && (
-              <div className="p-3 bg-amber-50 border border-amber-300 rounded-2xl text-xs font-bold text-amber-950 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 shadow-sm">
+              <div className="p-3 bg-white border-2 border-[#D6E8DF] rounded-lg text-xs font-bold text-[#222222] flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-amber-700 shrink-0" />
+                  <Clock className="w-4 h-4 text-[#555555] shrink-0" />
                   <span>Offline price — last updated: {offlinePriceInfo.lastUpdated || 'Initial Baseline'}</span>
                 </div>
-                <span className="text-[10px] font-black uppercase bg-amber-200 text-amber-900 px-2 py-0.5 rounded-md self-start sm:self-auto">
+                <span className="text-[10px] font-bold uppercase bg-white border-2 border-[#D6E8DF] text-[#555555] px-2 py-0.5 rounded self-start sm:self-auto">
                   IndexedDB Cached Rate
                 </span>
               </div>
@@ -423,31 +423,31 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
 
             {/* Cached Safety Guidance Box */}
             {safetyGuidance && (
-              <div className="p-4 bg-[#EAF4E8] border border-[#3F7655]/20 rounded-2xl space-y-2 text-xs">
+              <div className="p-4 bg-white border-2 border-[#D6E8DF] rounded-lg space-y-2 text-xs">
                 <div 
                   className="flex items-center justify-between cursor-pointer select-none"
                   onClick={() => setShowSafetyGuide(!showSafetyGuide)}
                 >
-                  <span className="font-extrabold text-[#244936] flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-[#3F7655]" />
+                  <span className="font-bold text-[#222222] flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
                     <span>Safety Protocols for {category} (Offline Cached)</span>
                   </span>
-                  <span className="text-[11px] font-bold text-[#3F7655] hover:underline">
+                  <span className="text-[11px] font-bold text-[#1F6F5F] hover:underline">
                     {showSafetyGuide ? '▲ Hide' : '▼ View Safety Guidance'}
                   </span>
                 </div>
 
                 {showSafetyGuide && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-[11px] animate-in fade-in duration-150">
-                    <div className="bg-white p-3 rounded-xl border border-emerald-200 space-y-1">
-                      <strong className="text-emerald-800 uppercase block text-[10px] font-black">✓ Handling Do's</strong>
-                      <ul className="list-disc list-inside space-y-0.5 text-[#203128] font-medium">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-[11px]">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#D6E8DF] space-y-1">
+                      <strong className="text-[#1F6F5F] uppercase block text-[10px] font-bold">✓ Handling Do's</strong>
+                      <ul className="list-disc list-inside space-y-0.5 text-[#555555] font-medium">
                         {safetyGuidance.dos?.map((d, i) => <li key={i}>{d}</li>)}
                       </ul>
                     </div>
-                    <div className="bg-white p-3 rounded-xl border border-rose-200 space-y-1">
-                      <strong className="text-rose-800 uppercase block text-[10px] font-black">✕ Handling Don'ts</strong>
-                      <ul className="list-disc list-inside space-y-0.5 text-[#203128] font-medium">
+                    <div className="bg-white p-3 rounded-lg border-2 border-[#D6E8DF] space-y-1">
+                      <strong className="text-[#222222] uppercase block text-[10px] font-bold">✕ Handling Don'ts</strong>
+                      <ul className="list-disc list-inside space-y-0.5 text-[#555555] font-medium">
                         {safetyGuidance.donts?.map((d, i) => <li key={i}>{d}</li>)}
                       </ul>
                     </div>
@@ -459,7 +459,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
             {/* Input for Recycler Quoted Price */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-black text-[#203128] flex items-center gap-1.5">
+                <label className="text-xs font-bold text-[#222222] flex items-center gap-1.5">
                   <span>{t('recyclerQuotedPrice', 'Recycler Quoted Price')} (₹/{unit}) *</span>
                 </label>
                 <button
@@ -468,7 +468,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
                     setQuotedPrice(String(displayBenchmark));
                     setIsCustomQuote(false);
                   }}
-                  className="text-[11px] font-bold text-[#3F7655] hover:text-[#244936] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-[11px] font-bold text-[#1F6F5F] hover:text-[#2FA084] hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <RefreshCw className="w-3 h-3" />
                   <span>{t('useBenchmarkRate', 'Use Benchmark')} (₹{displayBenchmark}/{unit})</span>
@@ -476,7 +476,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
               </div>
 
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-black text-[#718078]">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#555555]">
                   ₹
                 </span>
                 <input
@@ -490,118 +490,112 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
                     setIsCustomQuote(true);
                   }}
                   placeholder={`e.g. ${displayBenchmark}`}
-                  className="w-full bg-white border-2 border-[#3F7655]/30 rounded-2xl pl-8 pr-16 py-3.5 text-sm font-black text-[#203128] focus:border-[#3F7655] focus:outline-none shadow-sm"
+                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg pl-8 pr-16 py-3.5 text-sm font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#718078] uppercase">
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#555555] uppercase">
                   / {unit}
                 </span>
               </div>
-              <p className="text-[11px] text-[#718078] mt-1.5">
+              <p className="text-[11px] text-[#555555] mt-1.5">
                 {t('quotedPriceHelpText', 'Enter your asking or quoted price per {unit}. The system checks if it falls within the fair ±{tolerance}% reference range.', { unit, tolerance: displayTolerance })}
               </p>
             </div>
 
             {/* Live Benchmark & Allowed Range Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-2xl bg-white border border-[#3F7655]/20 space-y-1">
-                <span className="text-[10px] font-black uppercase text-[#718078] tracking-wider block">
+              <div className="p-3.5 rounded-lg bg-white border-2 border-[#D6E8DF] space-y-1">
+                <span className="text-[10px] font-bold uppercase text-[#555555] tracking-wider block">
                   {t('categoryBenchmarkLabel', 'Category Benchmark')}
                 </span>
-                <span className="text-base font-black text-[#203128] block">
+                <span className="text-base font-bold text-[#222222] block">
                   ₹{displayBenchmark} / {unit}
                 </span>
-                <span className="text-[10px] text-[#718078] block">
+                <span className="text-[10px] text-[#555555] block">
                   {t('cpcbReferenceRateLabel', 'CPCB Reference Price')}
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-white border border-[#3F7655]/20 space-y-1">
-                <span className="text-[10px] font-black uppercase text-[#718078] tracking-wider block">
+              <div className="p-3.5 rounded-lg bg-white border-2 border-[#D6E8DF] space-y-1">
+                <span className="text-[10px] font-bold uppercase text-[#555555] tracking-wider block">
                   {t('allowedPriceRange', 'Allowed Price Range')} (±{displayTolerance}%)
                 </span>
-                <span className="text-base font-black text-[#3F7655] block">
+                <span className="text-base font-bold text-[#1F6F5F] block">
                   ₹{minPrice} – ₹{maxPrice} / {unit}
                 </span>
-                <span className="text-[10px] text-[#718078] block">
+                <span className="text-[10px] text-[#555555] block">
                   {t('fairTransactionBoundsLabel', 'Fair Transaction Bounds')}
                 </span>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-white border border-[#3F7655]/20 space-y-1">
-                <span className="text-[10px] font-black uppercase text-[#718078] tracking-wider block">
+              <div className="p-3.5 rounded-lg bg-white border-2 border-[#D6E8DF] space-y-1">
+                <span className="text-[10px] font-bold uppercase text-[#555555] tracking-wider block">
                   {t('estimatedTotalValue', 'Estimated Total Value')}
                 </span>
-                <span className="text-base font-black text-[#203128] block">
+                <span className="text-base font-bold text-[#222222] block">
                   ₹{estimatedTotalAmount.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-[#718078] block">
+                <span className="text-[10px] text-[#555555] block">
                   {parsedQty} {unit} × ₹{parsedQuote || 0}
                 </span>
               </div>
             </div>
 
             {/* Clearance & Validation Status Banner */}
-            <div className={`p-4 rounded-2xl border transition-all ${
+            <div className={`p-4 rounded-lg border-2 bg-white ${
               validation.isCleared
-                ? 'bg-emerald-50/90 border-emerald-300 text-emerald-950'
-                : validation.position === 'BELOW_RANGE'
-                  ? 'bg-rose-50/90 border-rose-300 text-rose-950'
-                  : 'bg-amber-50/90 border-amber-300 text-amber-950'
+                ? 'border-[#6FCF97]'
+                : 'border-[#D6E8DF]'
             }`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-start gap-3">
-                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-white font-bold ${
-                    validation.isCleared ? 'bg-emerald-600' : validation.position === 'BELOW_RANGE' ? 'bg-rose-600' : 'bg-amber-600'
-                  }`}>
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-white border-2 border-[#D6E8DF] text-[#1F6F5F]">
                     {validation.isCleared ? (
-                      <CheckCircle2 className="w-5 h-5" />
+                      <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" />
                     ) : (
-                      <AlertTriangle className="w-5 h-5" />
+                      <AlertTriangle className="w-5 h-5 text-[#555555]" />
                     )}
                   </div>
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black uppercase tracking-wider">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#222222]">
                         Validation Status:
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] font-black ${
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold bg-white border-2 ${
                         validation.isCleared 
-                          ? 'bg-emerald-200 text-emerald-900' 
-                          : 'bg-rose-200 text-rose-900'
+                          ? 'border-[#6FCF97] text-[#1F6F5F]' 
+                          : 'border-[#D6E8DF] text-[#222222]'
                       }`}>
                         {validation.isCleared ? t('preClearedBadge', 'PRE-CLEARED ✅') : t('notClearedBadge', 'NOT CLEARED ❌')}
                       </span>
                       {!validation.isCleared && (
-                        <span className="text-[11px] font-black uppercase text-rose-700 bg-rose-100 px-2 py-0.5 rounded-md">
+                        <span className="text-[11px] font-bold uppercase text-[#555555] bg-white border-2 border-[#D6E8DF] px-2 py-0.5 rounded">
                           {validation.position === 'BELOW_RANGE' ? t('belowAllowedRange', 'Below Allowed Range') : t('aboveAllowedRange', 'Above Allowed Range')}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-bold leading-snug">
+                    <p className="text-xs font-bold leading-snug text-[#222222]">
                       {validation.message}
                     </p>
-                    <p className="text-[11px] opacity-80">
+                    <p className="text-[11px] text-[#555555]">
                       {validation.explanation}
                     </p>
                   </div>
                 </div>
 
                 <div className="shrink-0 self-end sm:self-center">
-                  <span className={`px-3 py-1.5 rounded-xl text-xs font-black border flex items-center gap-1.5 shadow-sm ${
+                  <span className={`px-3 py-1.5 rounded-lg text-xs font-bold border-2 flex items-center gap-1.5 bg-white ${
                     validation.isCleared
-                      ? 'bg-emerald-600 text-white border-emerald-700'
-                      : validation.position === 'BELOW_RANGE'
-                        ? 'bg-rose-600 text-white border-rose-700'
-                        : 'bg-amber-600 text-white border-amber-700'
+                      ? 'border-[#6FCF97] text-[#1F6F5F]'
+                      : 'border-[#D6E8DF] text-[#222222]'
                   }`}>
                     {validation.isCleared ? (
                       <>
-                        <ShieldCheck className="w-4 h-4" />
+                        <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
                         <span>{t('preClearedBadge', 'Pre-Cleared')}</span>
                       </>
                     ) : (
                       <>
-                        <AlertTriangle className="w-4 h-4" />
+                        <AlertTriangle className="w-4 h-4 text-[#555555]" />
                         <span>{t('flaggedBadge', 'Flagged')} ({validation.diffPercent}% off)</span>
                       </>
                     )}
@@ -613,7 +607,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
 
           {/* Notes */}
           <div>
-            <label className="text-xs font-extrabold text-[#203128] block mb-1">
+            <label className="text-xs font-bold text-[#222222] block mb-1">
               {t('additionalInspectionNotes', 'Collector Notes / Special Instructions')}
             </label>
             <textarea
@@ -621,16 +615,16 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t('placeholderStorageNotes', 'e.g. Stored in ESD safe boxes, ready for loading dock inspection.')}
-              className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl p-4 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+              className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg p-4 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
             />
           </div>
 
           {/* Submit Button */}
-          <div className="pt-4 border-t border-[#3F7655]/10 flex items-center justify-end gap-4">
+          <div className="pt-4 border-t-2 border-[#D6E8DF] flex items-center justify-end gap-4">
             <button
               type="button"
               onClick={() => navigate('/collector/dashboard')}
-              className="px-6 py-3.5 text-xs font-bold text-[#718078] hover:text-[#203128] cursor-pointer"
+              className="px-6 py-3.5 text-xs font-bold text-[#555555] hover:text-[#222222] cursor-pointer"
             >
               {t('cancel', 'Cancel')}
             </button>
@@ -638,7 +632,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-8 py-3.5 bg-[#3F7655] hover:bg-[#244936] disabled:opacity-60 text-white rounded-2xl font-black text-xs shadow-md transition flex items-center gap-2 cursor-pointer"
+              className="px-8 py-3.5 bg-[#1F6F5F] hover:bg-[#2FA084] disabled:opacity-60 text-white rounded-lg font-bold text-xs transition flex items-center gap-2 cursor-pointer"
             >
               {isSubmitting ? (
                 <>

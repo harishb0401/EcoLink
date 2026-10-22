@@ -2,45 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-[#F8F5EA] text-[#203128] antialiased font-sans selection:bg-[#3F7655] selection:text-white;
+/* System-wide clean background and text rules */
+html, body {
+  background-color: #FFFFFF !important;
+  color: #222222 !important;
 }
 
-/* Custom Scrollbar */
+body {
+  @apply bg-white text-[#222222] antialiased font-sans selection:bg-[#1F6F5F] selection:text-white;
+}
+
+/* Eliminate drop shadows, glassmorphism, and radial glows across the app */
+*, *::before, *::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+/* Base input and button styles: 2px #D6E8DF borders, faint green background #F5FBF7, active #B8D9C8 */
+input, select, textarea {
+  background-color: #F5FBF7 !important;
+  border: 2px solid #D6E8DF !important;
+  border-radius: 8px;
+  color: #222222;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #B8D9C8 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #555555;
+}
+
+/* Clean minimal scrollbar */
 ::-webkit-scrollbar {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F0EAD6;
+  background: #FFFFFF;
 }
 ::-webkit-scrollbar-thumb {
-  background: #B8DBAF;
-  border-radius: 999px;
+  background: #D6E8DF;
+  border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3F7655;
+  background: #B8D9C8;
 }
 
-/* Custom organic animations */
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-10px) rotate(2deg); }
+.organic-card, .ecolink-card {
+  background-color: #F5FBF7;
+  border: 2px solid #D6E8DF;
+  border-radius: 8px;
+  transition: border-color 0.2s ease-in-out;
 }
 
-.animate-float-slow {
-  animation: floatSlow 6s ease-in-out infinite;
+.ecolink-card-highlight {
+  background-color: #EFF8F2;
+  border: 2px solid #D6E8DF;
+  border-radius: 8px;
+  transition: border-color 0.2s ease-in-out;
 }
 
-.organic-card {
-  background-color: #FFFFFF;
-  border-radius: 20px;
-  border: 1px solid rgba(63, 118, 85, 0.12);
-  transition: all 0.25s ease-in-out;
-}
-
-.organic-card:hover {
-  border-color: rgba(63, 118, 85, 0.3);
-  box-shadow: 0 12px 32px -6px rgba(32, 49, 40, 0.08);
-  transform: translateY(-2px);
+.organic-card:hover, .ecolink-card:hover {
+  border-color: #B8D9C8;
 }

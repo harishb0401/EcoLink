@@ -20,7 +20,7 @@ export default function AdminLayout({ currentUser, onLogout, onOpenSearchModal }
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8F5EA] text-[#203128] antialiased font-sans">
+    <div className="min-h-screen flex flex-col bg-[#FFFFFF] text-[#222222] antialiased font-sans">
       <Navbar 
         isLoggedIn={true} 
         currentRole="admin" 

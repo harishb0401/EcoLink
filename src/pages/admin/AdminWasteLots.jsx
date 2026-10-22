@@ -21,25 +21,25 @@ export default function AdminWasteLots({ materialLots = mockWasteLots }) {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white text-[#222222]">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-[#203128]">{t('regulatedWasteLotsTitle', 'Regulated Waste Lots')}</h1>
-        <p className="text-xs sm:text-sm text-[#718078]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#222222]">{t('regulatedWasteLotsTitle', 'Regulated Waste Lots')}</h1>
+        <p className="text-xs sm:text-sm text-[#555555]">
           {t('regulatedWasteLotsSub', 'Live state-wide registry of all declared material lots, benchmark values, and verification statuses.')}
         </p>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 sm:p-6 rounded-[28px] border border-[#3F7655]/20 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-[#F5FBF7] p-4 sm:p-6 rounded-lg border-2 border-[#D6E8DF] flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-[#3F7655] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('searchLotPlaceholder', 'Search lot ID, material, location...')}
-            className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+            className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2.5 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
           />
         </div>
 
@@ -48,10 +48,10 @@ export default function AdminWasteLots({ materialLots = mockWasteLots }) {
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer whitespace-nowrap border-2 ${
                 statusFilter === st
-                  ? 'bg-[#3F7655] text-white shadow-sm'
-                  : 'bg-[#F8F5EA] text-[#203128] border border-[#3F7655]/15 hover:bg-[#DDEBD8]'
+                  ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
+                  : 'bg-white text-[#222222] border-[#D6E8DF] hover:border-[#B8D9C8]'
               }`}
             >
               {st === 'ALL' ? t('allLots', 'All Lots') : tStatus(st)}
@@ -61,10 +61,10 @@ export default function AdminWasteLots({ materialLots = mockWasteLots }) {
       </div>
 
       {/* Table */}
-      <div className="bg-[#FAF8F2] border border-[#3F7655]/15 rounded-[32px] overflow-hidden shadow-md">
+      <div className="bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-[#FAF8F2] text-[#718078] uppercase text-[10px] font-black border-b border-[#3F7655]/10">
+            <thead className="bg-[#EFF8F2] text-[#555555] uppercase text-[10px] font-bold border-b-2 border-[#D6E8DF]">
               <tr>
                 <th className="p-4 pl-6">{t('lotIdentifierCol', 'Lot Identifier')}</th>
                 <th className="p-4">{t('catAndMaterialCol', 'Category & Material')}</th>
@@ -74,20 +74,20 @@ export default function AdminWasteLots({ materialLots = mockWasteLots }) {
                 <th className="p-4 pr-6 text-right">{t('lifecycleStatusCol', 'Lifecycle Status')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#3F7655]/10 text-[#203128] font-semibold bg-white">
+            <tbody className="divide-y-2 divide-[#D6E8DF] text-[#222222] font-semibold bg-white">
               {filtered.map((lot) => (
-                <tr key={lot.id} className="hover:bg-[#F8F5EA]/50 transition">
+                <tr key={lot.id} className="hover:bg-[#EFF8F2] transition">
                   <td className="p-4 pl-6">
-                    <strong className="font-mono text-xs text-[#244936] block">{lot.id}</strong>
-                    <span className="text-[10px] text-[#718078]">{lot.createdDate || 'Recent'}</span>
+                    <strong className="font-mono text-xs text-[#1F6F5F] block">{lot.id}</strong>
+                    <span className="text-[10px] text-[#555555]">{lot.createdDate || 'Recent'}</span>
                   </td>
                   <td className="p-4">
-                    <span className="font-extrabold block">{tCategory(lot.category)}</span>
-                    <span className="text-[11px] text-[#718078]">{lot.material}</span>
+                    <span className="font-bold block text-[#222222]">{tCategory(lot.category)}</span>
+                    <span className="text-[11px] text-[#555555]">{lot.material}</span>
                   </td>
-                  <td className="p-4 font-black">{lot.quantity || lot.totalWeightKg} {lot.unit || 'kg'}</td>
-                  <td className="p-4">₹{lot.benchmarkPrice || 350} / kg</td>
-                  <td className="p-4">{lot.location}</td>
+                  <td className="p-4 font-bold text-[#222222]">{lot.quantity || lot.totalWeightKg} {lot.unit || 'kg'}</td>
+                  <td className="p-4 text-[#555555]">₹{lot.benchmarkPrice || 350} / kg</td>
+                  <td className="p-4 text-[#555555]">{lot.location}</td>
                   <td className="p-4 pr-6 text-right">
                     <StatusBadge status={lot.status} />
                   </td>

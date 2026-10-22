@@ -19,44 +19,46 @@ export default function AdminTransactions({ transactions = mockTransactions }) {
   const totalSettled = txList.reduce((sum, tx) => sum + (tx.totalValue || 0), 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white text-[#222222]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#203128]">{t('adminTransactionsTitle', 'Platform Transactions Ledger')}</h1>
-          <p className="text-xs sm:text-sm text-[#718078]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#222222]">{t('adminTransactionsTitle', 'Platform Transactions Ledger')}</h1>
+          <p className="text-xs sm:text-sm text-[#555555]">
             {t('transactionsSubtitle', 'State-wide escrow settlements, direct UPI disbursements, and GST compliance logs.')}
           </p>
         </div>
 
-        <div className="p-4 bg-[#DDEBD8] rounded-2xl border border-[#3F7655]/20 flex items-center gap-3">
-          <DollarSign className="w-6 h-6 text-[#244936]" />
+        <div className="p-4 bg-[#EFF8F2] rounded-lg border-2 border-[#D6E8DF] flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center">
+            <DollarSign className="w-5 h-5" />
+          </div>
           <div>
-            <span className="text-[10px] font-extrabold text-[#244936] uppercase block">{t('cumulativePayoutsLabel', 'Cumulative Platform Payouts')}</span>
-            <span className="text-xl font-black text-[#244936]">₹{totalSettled.toLocaleString()}</span>
+            <span className="text-[10px] font-bold text-[#555555] uppercase block">{t('cumulativePayoutsLabel', 'Cumulative Platform Payouts')}</span>
+            <span className="text-xl font-bold text-[#1F6F5F]">₹{totalSettled.toLocaleString()}</span>
           </div>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-4 sm:p-6 rounded-[28px] border border-[#3F7655]/20 shadow-sm">
+      <div className="bg-[#F5FBF7] p-4 sm:p-6 rounded-lg border-2 border-[#D6E8DF]">
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-[#3F7655] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('searchTransactionsPlaceholder', 'Search invoice ID, lot ID, party...')}
-            className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+            className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2.5 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-[32px] border border-[#3F7655]/20 shadow-md overflow-hidden">
+      <div className="bg-[#F5FBF7] rounded-lg border-2 border-[#D6E8DF] overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-[#FAF8F2] text-[#718078] uppercase text-[10px] font-black border-b border-[#3F7655]/10">
+            <thead className="bg-[#EFF8F2] text-[#555555] uppercase text-[10px] font-bold border-b-2 border-[#D6E8DF]">
               <tr>
                 <th className="p-4 pl-6">{t('invoiceNumCol', 'Invoice #')}</th>
                 <th className="p-4">{t('lotReferenceCol', 'Lot Reference')}</th>
@@ -67,21 +69,21 @@ export default function AdminTransactions({ transactions = mockTransactions }) {
                 <th className="p-4 pr-6 text-right">{t('escrowStatusCol', 'Escrow Status')}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#3F7655]/10 text-[#203128] font-semibold">
+            <tbody className="divide-y-2 divide-[#D6E8DF] text-[#222222] font-semibold">
               {filtered.map((tx) => (
-                <tr key={tx.id} className="hover:bg-[#F8F5EA]/50 transition">
+                <tr key={tx.id} className="hover:bg-[#EFF8F2] transition">
                   <td className="p-4 pl-6">
-                    <strong className="font-mono text-xs text-[#244936] block">{tx.id}</strong>
-                    <span className="text-[10px] text-[#718078]">{tx.date || tx.paymentDate || '2026-03-01'}</span>
+                    <strong className="font-mono text-xs text-[#1F6F5F] block">{tx.id}</strong>
+                    <span className="text-[10px] text-[#555555]">{tx.date || tx.paymentDate || '2026-03-01'}</span>
                   </td>
-                  <td className="p-4 font-mono text-[11px]">{tx.lotId}</td>
-                  <td className="p-4 font-bold">{tx.collectorName}</td>
-                  <td className="p-4">{tx.recyclerName}</td>
-                  <td className="p-4">{tx.weightKg || 120} kg @ ₹{tx.ratePerKg || 380}/kg</td>
-                  <td className="p-4 font-black text-[#3F7655] text-sm">₹{(tx.totalValue || 45600).toLocaleString()}</td>
+                  <td className="p-4 font-mono text-[11px] text-[#555555]">{tx.lotId}</td>
+                  <td className="p-4 font-bold text-[#222222]">{tx.collectorName}</td>
+                  <td className="p-4 text-[#555555]">{tx.recyclerName}</td>
+                  <td className="p-4 text-[#555555]">{tx.weightKg || 120} kg @ ₹{tx.ratePerKg || 380}/kg</td>
+                  <td className="p-4 font-bold text-[#1F6F5F] text-sm">₹{(tx.totalValue || 45600).toLocaleString()}</td>
                   <td className="p-4 pr-6 text-right">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#1F6F5F] bg-[#EFF8F2] border-2 border-[#B8D9C8] px-2.5 py-0.5 rounded">
+                      <CheckCircle2 className="w-3 h-3 text-[#1F6F5F]" />
                       {tx.status || 'SETTLED'}
                     </span>
                   </td>

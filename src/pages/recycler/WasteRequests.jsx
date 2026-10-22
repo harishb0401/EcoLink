@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Search, Filter, ShoppingBag, DollarSign, ArrowRight, ShieldCheck, 
   CheckCircle2, AlertTriangle, Scale, MapPin, Calendar, Clock, Truck, 
-  Send, X
+  Send, X, Loader2
 } from 'lucide-react';
 import { mockWasteLots, mockBenchmarkPrices, mockRecycler } from '../../data/mockData';
 import { calculateFairPriceRange } from '../../utils/rulesEngine';
@@ -90,36 +90,35 @@ export default function WasteRequests({
     }
   };
 
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white text-[#222222]">
       {/* Header */}
       <div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-[#3F7655] bg-[#DDEBD8] px-3 py-0.5 rounded-full">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#1F6F5F] bg-[#F5FBF7] border-2 border-[#D6E8DF] px-3 py-1 rounded">
             {t('recyclerIntakePipeline', 'Recycler Intake Pipeline')}
           </span>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-[#203128] mt-1.5">{t('availableCollectorRequests', 'Available Collector Requests')}</h1>
-        <p className="text-xs sm:text-sm text-[#718078]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#222222] mt-2">{t('availableCollectorRequests', 'Available Collector Requests')}</h1>
+        <p className="text-xs sm:text-sm text-[#555555]">
           {t('availableRequestsDesc', 'Review authenticated e-waste requests declared by registered collectors and submit competitive price offers.')}
         </p>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-white p-4 sm:p-5 rounded-[28px] border border-[#3F7655]/20 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-[#F5FBF7] p-4 sm:p-5 rounded-lg border-2 border-[#D6E8DF] flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-96">
-          <Search className="w-4 h-4 text-[#3F7655] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('searchRecyclerRequestsPlaceholder', 'Search material category, request ID, or location...')}
-            className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+            className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2.5 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
           />
         </div>
 
-        <span className="text-xs font-black text-[#3F7655] bg-[#DDEBD8] px-3.5 py-1.5 rounded-xl self-start md:self-auto">
+        <span className="text-xs font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-3.5 py-1.5 rounded-lg self-start md:self-auto">
           {t('requestsAvailableBiddingCount', '{count} Requests Available for Bidding', { count: filteredLots.length })}
         </span>
       </div>
@@ -135,51 +134,51 @@ export default function WasteRequests({
           return (
             <div
               key={lot.id}
-              className="bg-white p-6 rounded-[32px] border border-[#3F7655]/20 shadow-md hover:border-[#3F7655]/50 transition flex flex-col justify-between space-y-4"
+              className="bg-[#F5FBF7] p-6 rounded-lg border-2 border-[#D6E8DF] hover:border-[#B8D9C8] transition flex flex-col justify-between space-y-4"
             >
               <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2 border-b border-[#3F7655]/10 pb-3">
+                <div className="flex items-start justify-between gap-2 border-b-2 border-[#D6E8DF] pb-3">
                   <div>
-                    <span className="text-[10px] font-extrabold text-[#3F7655] bg-[#DDEBD8] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    <span className="text-[10px] font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2.5 py-0.5 rounded uppercase tracking-wider">
                       {tCategory(lot.category)}
                     </span>
-                    <h3 className="text-base font-black text-[#203128] mt-1.5">{lot.material}</h3>
-                    <span className="text-xs font-mono font-bold text-[#718078]">{lot.id}</span>
+                    <h3 className="text-base font-bold text-[#222222] mt-1.5">{lot.material}</h3>
+                    <span className="text-xs font-mono text-[#555555]">{lot.id}</span>
                   </div>
-                  <span className="text-xs font-black text-[#244936] bg-[#F2C94C] px-2.5 py-0.5 rounded-full">
+                  <span className="text-xs font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2.5 py-0.5 rounded">
                     {qty} {unit}
                   </span>
                 </div>
 
-                <div className="space-y-1.5 text-xs text-[#718078]">
-                  <p className="flex items-center gap-1.5 text-[#203128] font-bold">
-                    <MapPin className="w-3.5 h-3.5 text-[#3F7655] shrink-0" />
+                <div className="space-y-1.5 text-xs text-[#555555]">
+                  <p className="flex items-center gap-1.5 text-[#222222] font-bold">
+                    <MapPin className="w-3.5 h-3.5 text-[#1F6F5F] shrink-0" />
                     <span className="truncate">{lot.location}</span>
                   </p>
                   <p className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-[#3F7655] shrink-0" />
+                    <Calendar className="w-3.5 h-3.5 text-[#1F6F5F] shrink-0" />
                     <span>{t('postedDate', 'Posted')}: {lot.collectionDate || lot.createdDate || 'Today'}</span>
                   </p>
                 </div>
 
                 {/* Benchmark Band info */}
-                <div className="p-3.5 bg-[#FAF8F2] rounded-2xl border border-[#3F7655]/10 text-xs space-y-1.5">
+                <div className="p-3.5 bg-white rounded-lg border-2 border-[#D6E8DF] text-xs space-y-1.5">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-extrabold text-[#718078] uppercase">{t('stateBenchmarkRate', 'State Benchmark Rate')}</span>
-                    <span className="font-black text-[#203128]">₹{benchmark} / {unit}</span>
+                    <span className="text-[10px] font-bold text-[#555555] uppercase">{t('stateBenchmarkRate', 'State Benchmark Rate')}</span>
+                    <span className="font-bold text-[#222222]">₹{benchmark} / {unit}</span>
                   </div>
                   <div className="flex justify-between items-center text-[11px]">
-                    <span className="text-[#718078]">{t('fairRange25', 'Fair Range (±25%)')}</span>
-                    <span className="font-bold text-[#3F7655]">₹{fairBand.minPrice} – ₹{fairBand.maxPrice} / {unit}</span>
+                    <span className="text-[#555555]">{t('fairRange25', 'Fair Range (±25%)')}</span>
+                    <span className="font-bold text-[#1F6F5F]">₹{fairBand.minPrice} – ₹{fairBand.maxPrice} / {unit}</span>
                   </div>
                 </div>
               </div>
 
               {/* Action Button */}
-              <div className="pt-3 border-t border-[#3F7655]/10">
+              <div className="pt-3 border-t-2 border-[#D6E8DF]">
                 <button
                   onClick={() => handleOpenBid(lot)}
-                  className="w-full py-3 bg-[#3F7655] hover:bg-[#244936] text-white rounded-xl font-black text-xs shadow transition flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <DollarSign className="w-4 h-4" />
                   <span>{t('submitPriceOffer', 'Submit Price Offer')}</span>
@@ -192,32 +191,32 @@ export default function WasteRequests({
 
       {/* Submit Bid Modal */}
       {selectedLotForBid && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-[32px] border border-[#3F7655]/20 max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl animate-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-4 border-b border-[#3F7655]/15">
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-[#F5FBF7] rounded-lg border-2 border-[#D6E8DF] max-w-lg w-full p-6 sm:p-8 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b-2 border-[#D6E8DF]">
               <div>
-                <span className="text-[10px] font-black uppercase text-[#3F7655] bg-[#DDEBD8] px-2.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold uppercase text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2.5 py-0.5 rounded">
                   {t('submitRecyclerOfferModalTitle', 'Submit Recycler Offer')}
                 </span>
-                <h3 className="text-xl font-black text-[#203128] mt-1">{selectedLotForBid.id}</h3>
+                <h3 className="text-xl font-bold text-[#222222] mt-1">{selectedLotForBid.id}</h3>
               </div>
               <button
                 onClick={() => setSelectedLotForBid(null)}
-                className="p-2 rounded-full hover:bg-slate-100 text-slate-500 font-bold text-sm cursor-pointer"
+                className="p-2 rounded hover:bg-white text-[#555555] hover:text-[#222222] font-bold text-sm cursor-pointer"
               >
                 ✕
               </button>
             </div>
 
             <form onSubmit={handleSendBid} className="space-y-4 text-xs">
-              <div className="p-3.5 bg-[#F8F5EA] rounded-2xl space-y-1">
-                <p><strong>{t('materialCategory', 'Material')}:</strong> {selectedLotForBid.material}</p>
-                <p><strong>{t('weight', 'Weight')}:</strong> {selectedLotForBid.quantity || selectedLotForBid.totalWeightKg} {selectedLotForBid.unit || 'kg'}</p>
-                <p><strong>{t('benchmarkPriceLabel', 'Benchmark Rate')}:</strong> ₹{selectedLotForBid.benchmarkPrice || 350} / {selectedLotForBid.unit || 'kg'}</p>
+              <div className="p-3.5 bg-white border-2 border-[#D6E8DF] rounded-lg space-y-1 text-[#555555]">
+                <p><strong className="text-[#222222]">{t('materialCategory', 'Material')}:</strong> {selectedLotForBid.material}</p>
+                <p><strong className="text-[#222222]">{t('weight', 'Weight')}:</strong> {selectedLotForBid.quantity || selectedLotForBid.totalWeightKg} {selectedLotForBid.unit || 'kg'}</p>
+                <p><strong className="text-[#222222]">{t('benchmarkPriceLabel', 'Benchmark Rate')}:</strong> ₹{selectedLotForBid.benchmarkPrice || 350} / {selectedLotForBid.unit || 'kg'}</p>
               </div>
 
               <div>
-                <label className="font-extrabold text-[#203128] block mb-1">
+                <label className="font-bold text-[#222222] block mb-1">
                   {t('yourOfferedPrice', 'Your Offered Price per Unit (₹)')} *
                 </label>
                 <input
@@ -226,12 +225,12 @@ export default function WasteRequests({
                   min="1"
                   value={bidRate}
                   onChange={(e) => setBidRate(e.target.value)}
-                  className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-sm font-black text-[#203128] focus:bg-white focus:outline-none"
+                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-sm font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="font-extrabold text-[#203128] block mb-1">
+                <label className="font-bold text-[#222222] block mb-1">
                   {t('proposedPickupDateLabel', 'Proposed Pickup Date')} *
                 </label>
                 <input
@@ -239,48 +238,48 @@ export default function WasteRequests({
                   required
                   value={pickupDate}
                   onChange={(e) => setPickupDate(e.target.value)}
-                  className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="font-extrabold text-[#203128] block mb-1">
+                <label className="font-bold text-[#222222] block mb-1">
                   {t('logisticsWeighingTerms', 'Logistics & Weighing Terms')}
                 </label>
                 <input
                   type="text"
                   value={logisticsNotes}
                   onChange={(e) => setLogisticsNotes(e.target.value)}
-                  className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
                 />
               </div>
 
-              <div className="p-3.5 bg-[#DDEBD8] rounded-2xl border border-[#3F7655]/30 flex justify-between items-center">
-                <span className="font-bold text-[#244936]">{t('totalPayoutCommitment', 'Total Payout Commitment')}:</span>
-                <span className="text-base font-black text-[#244936]">
+              <div className="p-3.5 bg-[#EFF8F2] rounded-lg border-2 border-[#D6E8DF] flex justify-between items-center">
+                <span className="font-bold text-[#555555]">{t('totalPayoutCommitment', 'Total Payout Commitment')}:</span>
+                <span className="text-base font-bold text-[#1F6F5F]">
                   ₹{(Math.round((parseFloat(bidRate) || 0) * (selectedLotForBid.quantity || selectedLotForBid.totalWeightKg || 0))).toLocaleString()}
                 </span>
               </div>
 
               {bidSubmitted && (
-                <div className="p-3.5 bg-emerald-100 text-emerald-800 rounded-2xl font-bold text-center flex items-center justify-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <div className="p-3.5 bg-[#EFF8F2] border-2 border-[#B8D9C8] text-[#1F6F5F] rounded-lg font-bold text-center flex items-center justify-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" />
                   <span>{t('offerDispatchedNotice', 'Offer dispatched! Collector has been notified.')}</span>
                 </div>
               )}
 
-              <div className="pt-4 border-t border-[#3F7655]/10 flex justify-end gap-3">
+              <div className="pt-4 border-t-2 border-[#D6E8DF] flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setSelectedLotForBid(null)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl cursor-pointer"
+                  className="px-5 py-2.5 bg-white hover:border-[#B8D9C8] text-[#222222] border-2 border-[#D6E8DF] font-bold rounded-lg cursor-pointer"
                 >
                   {t('cancel', 'Cancel')}
                 </button>
                 <button
                   type="submit"
-                  disabled={bidSubmitted}
-                  className="px-6 py-2.5 bg-[#3F7655] hover:bg-[#244936] text-white font-extrabold rounded-xl shadow cursor-pointer flex items-center gap-1.5"
+                  disabled={bidSubmitted || isSubmittingBid}
+                  className="px-6 py-2.5 bg-[#1F6F5F] hover:bg-[#2FA084] text-white font-bold rounded-lg cursor-pointer flex items-center gap-1.5"
                 >
                   <Send className="w-4 h-4" />
                   <span>{t('confirmSubmitOffer', 'Confirm & Submit Offer')}</span>

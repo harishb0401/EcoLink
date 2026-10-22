@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, CheckCircle2, XCircle, MapPin, ArrowRight, BookOpen, ShieldAlert, Cpu, Smartphone, Laptop, Monitor, Tv, Printer, Battery, Cable, HardDrive, Layers } from 'lucide-react';
+import { Search, CheckCircle2, XCircle, MapPin, ArrowRight, BookOpen, Cpu, Smartphone, Laptop, HardDrive, Monitor, Tv, Printer, Battery, Cable, Layers } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
 export default function RecycleGuide({ onOpenSearchModal }) {
@@ -14,7 +14,7 @@ export default function RecycleGuide({ onOpenSearchModal }) {
     {
       id: 'mobiles',
       name: 'Mobile phones',
-      icon: <Smartphone className="w-6 h-6 text-[#3F7655]" />,
+      icon: <Smartphone className="w-5 h-5 text-[#1F6F5F]" />,
       whatIsIt: t('rgMobWhatIsIt', 'Old, unused, or damaged mobile phones, smartphones, and cellular devices.'),
       components: [
         t('rgMobComp1', 'Printed Circuit Boards (PCBs)'),
@@ -36,7 +36,7 @@ export default function RecycleGuide({ onOpenSearchModal }) {
     {
       id: 'laptops',
       name: 'Laptops',
-      icon: <Laptop className="w-6 h-6 text-[#3F7655]" />,
+      icon: <Laptop className="w-5 h-5 text-[#1F6F5F]" />,
       whatIsIt: t('rgLapWhatIsIt', 'Portable notebook computers, ultrabooks, and laptop chargers.'),
       components: [
         t('rgLapComp1', 'Motherboards & RAM Chips'),
@@ -58,7 +58,7 @@ export default function RecycleGuide({ onOpenSearchModal }) {
     {
       id: 'computers',
       name: 'Computers',
-      icon: <HardDrive className="w-6 h-6 text-[#3F7655]" />,
+      icon: <HardDrive className="w-5 h-5 text-[#1F6F5F]" />,
       whatIsIt: t('rgCompWhatIsIt', 'Desktop PC towers, workstations, power supply units (PSUs), and internal drives.'),
       components: [
         t('rgCompComp1', 'High-Grade Motherboards'),
@@ -68,85 +68,85 @@ export default function RecycleGuide({ onOpenSearchModal }) {
       ],
       dos: [
         t('rgCompDo1', 'Remove data drives or execute cryptographic wipe'),
-        t('rgCompDo2', 'Keep metal casing intact during aggregation'),
-        t('rgCompDo3', 'Separate power cords for copper recovery')
+        t('rgCompDo2', 'Sort ferrous steel casing from sensitive electronics'),
+        t('rgCompDo3', 'Safely bundle all peripheral cables together')
       ],
       donts: [
-        t('rgCompDont1', 'Do not open power supply capacitors without safety tools'),
-        t('rgCompDont2', 'Do not discard heavy metal computer cases in municipal dumps'),
-        t('rgCompDont3', 'Do not burn wire insulation')
+        t('rgCompDont1', 'Do not open CRT monitors or high-voltage transformers'),
+        t('rgCompDont2', 'Do not release cooling liquids or hazardous lubricants'),
+        t('rgCompDont3', 'Do not discard desktop components into landfill waste')
       ]
     },
     {
       id: 'monitors',
-      name: 'Monitors',
-      icon: <Monitor className="w-6 h-6 text-[#3F7655]" />,
-      whatIsIt: t('rgMonWhatIsIt', 'Computer display monitors (LCD, LED, and legacy CRT glass monitors).'),
+      name: 'Monitors & screens',
+      icon: <Monitor className="w-5 h-5 text-[#1F6F5F]" />,
+      whatIsIt: t('rgMonWhatIsIt', 'LCD/LED monitors, CRT computer screens, display panels, and digital signage.'),
       components: [
-        t('rgMonComp1', 'Lead-containing CRT Glass'),
-        t('rgMonComp2', 'CCFL Backlight Tubes (Mercury trace)'),
-        t('rgMonComp3', 'Internal Driver PCBs'),
-        t('rgMonComp4', 'ABS Plastic Housings')
+        t('rgMonComp1', 'Lead Glass (in CRTs)'),
+        t('rgMonComp2', 'Mercury Vapor Tubes (in CCFL Backlights)'),
+        t('rgMonComp3', 'Indium Tin Oxide Glass'),
+        t('rgMonComp4', 'Circuit Boards & Transformers')
       ],
       dos: [
-        t('rgMonDo1', 'Handle CRT monitors with extreme care to prevent glass breakage'),
-        t('rgMonDo2', 'Store in dry, sheltered collection nodes'),
-        t('rgMonDo3', 'Hand over to certified e-waste dismantling units')
+        t('rgMonDo1', 'Keep glass screens intact to avoid hazardous dust emission'),
+        t('rgMonDo2', 'Handle CCFL backlit units carefully to avoid mercury vapor release'),
+        t('rgMonDo3', 'Transport screens upright and securely cushioned')
       ],
       donts: [
-        t('rgMonDont1', 'Do not smash glass tubes or expose vacuum funnels'),
-        t('rgMonDont2', 'Do not dump broken screens in open spaces'),
-        t('rgMonDont3', 'Do not mix with household scrap iron')
+        t('rgMonDont1', 'Do not break or shatter glass display panels'),
+        t('rgMonDont2', 'Do not expose internal phosphor coatings'),
+        t('rgMonDont3', 'Do not scavenge circuit boards using backyard methods')
       ]
     },
     {
       id: 'televisions',
       name: 'Televisions',
-      icon: <Tv className="w-6 h-6 text-[#3F7655]" />,
-      whatIsIt: t('rgTvWhatIsIt', 'Smart TVs, flat screens, OLED displays, and older tube televisions.'),
+      icon: <Tv className="w-5 h-5 text-[#1F6F5F]" />,
+      whatIsIt: t('rgTvWhatIsIt', 'Smart TVs, flat panel LED/OLED televisions, and older box CRT televisions.'),
       components: [
-        t('rgTvComp1', 'Mainboard Electronics'),
-        t('rgTvComp2', 'Power Inverters & Transformers'),
-        t('rgTvComp3', 'Polarized Display Filters'),
-        t('rgTvComp4', 'Copper Induction Coils')
+        t('rgTvComp1', 'High-Lead Funnel Glass'),
+        t('rgTvComp2', 'Copper Deflection Yokes'),
+        t('rgTvComp3', 'Internal Power Boards'),
+        t('rgTvComp4', 'Flame-Retardant Plastic Casings')
       ],
       dos: [
-        t('rgTvDo1', 'Keep TV bodies structurally intact during transport'),
-        t('rgTvDo2', 'Keep remote controls and cords grouped with unit'),
-        t('rgTvDo3', 'Register for scheduled pickup with licensed recyclers')
+        t('rgTvDo1', 'Keep televisions intact without cracking glass funnels'),
+        t('rgTvDo2', 'Keep remote controls and cords together with unit'),
+        t('rgTvDo3', 'Hand over to authorized e-waste aggregators')
       ],
       donts: [
-        t('rgTvDont1', 'Do not break backlight lamps containing mercury vapour'),
-        t('rgTvDont2', 'Do not scavenge internal boards without ventilation'),
-        t('rgTvDont3', 'Do not leave out in wet weather')
+        t('rgTvDont1', 'Do not break vacuum tubes which risk implosion'),
+        t('rgTvDont2', 'Do not dump old CRT televisions in water bodies'),
+        t('rgTvDont3', 'Do not open high-voltage flyback transformers')
       ]
     },
     {
       id: 'printers',
-      name: 'Printers',
-      icon: <Printer className="w-6 h-6 text-[#3F7655]" />,
-      whatIsIt: t('rgPrintWhatIsIt', 'LaserJet, Inkjet, thermal printers, scanners, and multi-function copiers.'),
+      name: 'Printers & scanners',
+      icon: <Printer className="w-5 h-5 text-[#1F6F5F]" />,
+      whatIsIt: t('rgPrintWhatIsIt', 'Laser printers, inkjet multifunction devices, copiers, and flatbed scanners.'),
       components: [
-        t('rgPrintComp1', 'Stepper Motors & Micro-controllers'),
-        t('rgPrintComp2', 'Toner Cartridges & Ink Heads'),
-        t('rgPrintComp3', 'Rubber Rollers & Metal Rods'),
-        t('rgPrintComp4', 'Plastic Enclosures')
+        t('rgPrintComp1', 'Toner Cartridges with Carbon Black / Microplastics'),
+        t('rgPrintComp2', 'Stepper Motors & Brass Gears'),
+        t('rgPrintComp3', 'Scanning Optics & Sensor Arrays'),
+        t('rgPrintComp4', 'ABS Plastic Outer Casings')
       ],
       dos: [
-        t('rgPrintDo1', 'Remove ink or toner cartridges prior to handover'),
-        t('rgPrintDo2', 'Store spent toner in closed bags to avoid airborne particulate'),
-        t('rgPrintDo3', 'Recycle plastic and electronic chassis via EPR hubs')
+        t('rgPrintDo1', 'Remove toner and ink cartridges before dispatch'),
+        t('rgPrintDo2', 'Recycle toner cartridges through authorized take-back programs'),
+        t('rgPrintDo3', 'Keep glass platen unscratched for optimal parts recovery')
       ],
       donts: [
-        t('rgPrintDont1', 'Do not inhale loose laser toner powder'),
-        t('rgPrintDont2', 'Do not wash ink residue into storm drains'),
-        t('rgPrintDont3', 'Do not burn plastic gears or cartridges')
+        t('rgPrintDont1', 'Do not inhale fine particulate toner powder during handling'),
+        t('rgPrintDont2', 'Do not dump empty toner cartridges in general garbage'),
+        t('rgPrintDont3', 'Do not pour liquid ink residues into drains')
       ]
     },
     {
       id: 'batteries',
       name: 'Batteries',
-      icon: <Battery className="w-6 h-6 text-[#3F7655]" />,
+      icon: <Battery className="w-5 h-5 text-[#1F6F5F]" />,
       whatIsIt: t('rgBatWhatIsIt', 'Rechargeable Lithium-ion, Lead-Acid UPS, and Nickel-Metal Hydride battery packs.'),
       components: [
         t('rgBatComp1', 'Cobalt, Nickel & Manganese Cathodes'),
@@ -168,7 +168,7 @@ export default function RecycleGuide({ onOpenSearchModal }) {
     {
       id: 'cables',
       name: 'Cables & chargers',
-      icon: <Cable className="w-6 h-6 text-[#3F7655]" />,
+      icon: <Cable className="w-5 h-5 text-[#1F6F5F]" />,
       whatIsIt: t('rgCabWhatIsIt', 'Copper electrical wires, power adapters, HDMI cables, and charging leads.'),
       components: [
         t('rgCabComp1', 'High-Purity Copper Core'),
@@ -190,7 +190,7 @@ export default function RecycleGuide({ onOpenSearchModal }) {
     {
       id: 'circuit-boards',
       name: 'Circuit boards',
-      icon: <Cpu className="w-6 h-6 text-[#3F7655]" />,
+      icon: <Cpu className="w-5 h-5 text-[#1F6F5F]" />,
       whatIsIt: t('rgPcbWhatIsIt', 'High-grade telecommunication PCBs, motherboard cards, and controller boards.'),
       components: [
         t('rgPcbComp1', 'Gold Bonding Wires & Gold Finger Plating'),
@@ -212,7 +212,7 @@ export default function RecycleGuide({ onOpenSearchModal }) {
     {
       id: 'other-electronics',
       name: 'Other electronics',
-      icon: <Layers className="w-6 h-6 text-[#3F7655]" />,
+      icon: <Layers className="w-5 h-5 text-[#1F6F5F]" />,
       whatIsIt: t('rgOthWhatIsIt', 'Microwaves, routers, set-top boxes, smart gadgets, and medical electronics.'),
       components: [
         t('rgOthComp1', 'Small Transformers & Relays'),
@@ -242,32 +242,32 @@ export default function RecycleGuide({ onOpenSearchModal }) {
   const activeCategory = guideCategories.find(c => c.id === selectedCatId) || guideCategories[0];
 
   return (
-    <div className="min-h-screen bg-[#F8F5EA] py-12 text-[#203128]">
+    <div className="min-h-screen bg-white py-12 text-[#222222]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
-        {/* Header (Section 3 Specification) */}
+        {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#DDEBD8] text-[#244936] text-xs font-extrabold uppercase tracking-wider border border-[#3F7655]/20">
-            <BookOpen className="w-3.5 h-3.5 text-[#3F7655]" /> {t('cpcbRecyclingGuideBadge', 'CPCB STANDARDIZED RECYCLING GUIDE')}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-[#1F6F5F] text-xs font-bold uppercase tracking-wider border-2 border-[#D6E8DF]">
+            <BookOpen className="w-3.5 h-3.5 text-[#1F6F5F]" /> {t('cpcbRecyclingGuideBadge', 'CPCB STANDARDIZED RECYCLING GUIDE')}
           </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#203128] tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#222222] tracking-tight">
             {t('guideMainHeading', 'How to Recycle Your E-Waste')}
           </h1>
-          <p className="text-base text-[#718078] font-medium">
+          <p className="text-base text-[#555555]">
             {t('guideSubHeading', 'Learn proper classification, valuable component recovery, and safe handling guidelines for 10 electronic waste categories.')}
           </p>
         </div>
 
-        {/* Search Bar Input (Section 3 Specification) */}
+        {/* Search Bar Input */}
         <div className="max-w-xl mx-auto">
           <div className="relative">
-            <Search className="w-5 h-5 text-[#3F7655] absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={guideSearch}
               onChange={(e) => setGuideSearch(e.target.value)}
               placeholder={t('searchGuidePlaceholder', 'Search category, e.g. Mobile, Laptop, PCB, Battery, Cables...')}
-              className="w-full bg-white border-2 border-[#3F7655]/25 rounded-2xl pl-12 pr-4 py-3.5 text-xs font-bold text-[#203128] focus:border-[#3F7655] focus:outline-none shadow-sm"
+              className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2.5 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
             />
           </div>
         </div>
@@ -278,10 +278,10 @@ export default function RecycleGuide({ onOpenSearchModal }) {
             <button
               key={cat.id}
               onClick={() => setSelectedCatId(cat.id)}
-              className={`px-4 py-2 rounded-2xl text-xs font-extrabold transition flex items-center gap-2 cursor-pointer border ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border-2 ${
                 selectedCatId === cat.id
-                  ? 'bg-[#3F7655] text-white border-[#3F7655] shadow-md'
-                  : 'bg-white text-[#203128] border-[#3F7655]/15 hover:bg-[#DDEBD8]'
+                  ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
+                  : 'bg-[#F5FBF7] text-[#555555] border-[#D6E8DF] hover:border-[#B8D9C8] hover:text-[#222222]'
               }`}
             >
               <span>{tCategory(cat.name)}</span>
@@ -291,69 +291,69 @@ export default function RecycleGuide({ onOpenSearchModal }) {
 
         {/* Detailed Category View Card */}
         {activeCategory && (
-          <div className="bg-white p-8 sm:p-10 rounded-[32px] border border-[#3F7655]/20 shadow-xl space-y-8 animate-fadeIn">
+          <div className="bg-[#F5FBF7] p-6 sm:p-8 rounded-lg border-2 border-[#D6E8DF] space-y-6">
             
             {/* Header with Title & Icon */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#3F7655]/10 pb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-[#DDEBD8] flex items-center justify-center">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#D6E8DF] pb-5">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-white border-2 border-[#D6E8DF] flex items-center justify-center">
                   {activeCategory.icon}
                 </div>
                 <div>
-                  <span className="text-xs font-black uppercase tracking-widest text-[#3F7655]">
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#1F6F5F]">
                     {t('cpcbClassificationBadge', 'CPCB E-WASTE CLASSIFICATION')}
                   </span>
-                  <h2 className="text-2xl sm:text-3xl font-black text-[#203128]">{tCategory(activeCategory.name)}</h2>
+                  <h2 className="text-2xl font-bold text-[#222222]">{tCategory(activeCategory.name)}</h2>
                 </div>
               </div>
 
               <button
                 onClick={() => navigate('/locations')}
-                className="px-5 py-2.5 bg-[#F8F5EA] hover:bg-[#DDEBD8] text-[#203128] font-bold text-xs rounded-xl border border-[#3F7655]/20 transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+                className="px-4 py-2 bg-white hover:border-[#B8D9C8] text-[#222222] font-bold text-xs rounded-lg border-2 border-[#D6E8DF] transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
               >
-                <MapPin className="w-4 h-4 text-[#3F7655]" />
+                <MapPin className="w-3.5 h-3.5 text-[#1F6F5F]" />
                 <span>{t('findDropPoints', 'Find Drop Points')}</span>
               </button>
             </div>
 
-            {/* WHAT IS IT (Section 3 Specification) */}
-            <div className="space-y-2">
-              <h3 className="text-xs font-extrabold uppercase text-[#3F7655] tracking-wider">
+            {/* WHAT IS IT */}
+            <div className="space-y-1.5">
+              <h3 className="text-xs font-bold uppercase text-[#1F6F5F] tracking-wider">
                 {t('whatIsItLabel', 'What is it?')}
               </h3>
-              <p className="text-sm font-semibold text-[#203128] leading-relaxed">
+              <p className="text-sm font-normal text-[#222222] leading-relaxed">
                 {activeCategory.whatIsIt}
               </p>
             </div>
 
-            {/* VALUABLE COMPONENTS / MATERIALS (Section 3 Specification) */}
-            <div className="space-y-3">
-              <h3 className="text-xs font-extrabold uppercase text-[#3F7655] tracking-wider">
+            {/* VALUABLE COMPONENTS / MATERIALS */}
+            <div className="space-y-2.5">
+              <h3 className="text-xs font-bold uppercase text-[#1F6F5F] tracking-wider">
                 {t('valuableComponentsLabel', 'Valuable Components & Recyclable Materials:')}
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 {activeCategory.components.map((comp, idx) => (
-                  <div key={idx} className="p-3 bg-[#FAF8F2] rounded-xl border border-[#3F7655]/15 text-xs font-bold text-[#203128] flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#3F7655]"></span>
+                  <div key={idx} className="p-2.5 bg-white rounded-lg border-2 border-[#D6E8DF] text-xs font-medium text-[#222222] flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1F6F5F]"></span>
                     <span>{comp}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* 2-Column Grid: DO vs DON'T (Section 3 Specification) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* 2-Column Grid: DO vs DON'T */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               
               {/* DO SECTION */}
-              <div className="p-6 bg-emerald-50/70 rounded-2xl border border-emerald-200 space-y-3">
-                <h3 className="text-sm font-black text-emerald-900 uppercase tracking-wider flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+              <div className="p-5 bg-[#EFF8F2] rounded-lg border-2 border-[#B8D9C8] space-y-3">
+                <h3 className="text-xs font-bold text-[#1F6F5F] uppercase tracking-wider flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#1F6F5F]" />
                   <span>{t('doLabel', 'Do')}</span>
                 </h3>
-                <ul className="space-y-2.5">
+                <ul className="space-y-2">
                   {activeCategory.dos.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs font-bold text-emerald-950">
-                      <span className="w-4 h-4 rounded-full bg-emerald-200 text-emerald-800 text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">✓</span>
+                    <li key={idx} className="flex items-start gap-2 text-xs font-normal text-[#222222]">
+                      <span className="w-3.5 h-3.5 rounded bg-white border-2 border-[#B8D9C8] text-[#1F6F5F] text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">✓</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -361,15 +361,15 @@ export default function RecycleGuide({ onOpenSearchModal }) {
               </div>
 
               {/* DON'T SECTION */}
-              <div className="p-6 bg-rose-50/70 rounded-2xl border border-rose-200 space-y-3">
-                <h3 className="text-sm font-black text-rose-900 uppercase tracking-wider flex items-center gap-2">
-                  <XCircle className="w-5 h-5 text-rose-600" />
+              <div className="p-5 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-3">
+                <h3 className="text-xs font-bold text-[#555555] uppercase tracking-wider flex items-center gap-2">
+                  <XCircle className="w-4 h-4 text-[#555555]" />
                   <span>{t('dontLabel', "Don't")}</span>
                 </h3>
-                <ul className="space-y-2.5">
+                <ul className="space-y-2">
                   {activeCategory.donts.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs font-bold text-rose-950">
-                      <span className="w-4 h-4 rounded-full bg-rose-200 text-rose-800 text-[10px] font-black flex items-center justify-center shrink-0 mt-0.5">✕</span>
+                    <li key={idx} className="flex items-start gap-2 text-xs font-normal text-[#222222]">
+                      <span className="w-3.5 h-3.5 rounded bg-white border-2 border-[#D6E8DF] text-[#555555] text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">✕</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -379,13 +379,13 @@ export default function RecycleGuide({ onOpenSearchModal }) {
             </div>
 
             {/* Footer Action */}
-            <div className="pt-4 border-t border-[#3F7655]/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <span className="text-xs text-[#718078] font-semibold">
+            <div className="pt-3 border-t-2 border-[#D6E8DF] flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-xs text-[#555555]">
                 {t('haveEWasteToDisposeText', 'Have e-waste of this category to dispose? Register a digital lot to get benchmark prices.')}
               </span>
               <button
                 onClick={() => navigate('/collector/register-waste')}
-                className="px-6 py-2.5 bg-[#3F7655] hover:bg-[#244936] text-white font-extrabold text-xs rounded-xl shadow transition cursor-pointer"
+                className="px-5 py-2 bg-[#1F6F5F] hover:bg-[#2FA084] text-white font-bold text-xs rounded-lg transition cursor-pointer"
               >
                 {t('registerEWasteLotBtn', 'Register E-Waste Lot →')}
               </button>

@@ -71,80 +71,76 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
   };
 
   return (
-    <div className="space-y-5 animate-in fade-in duration-150">
+    <div className="space-y-5">
       {/* Title & Subtitle */}
       <div className="text-center space-y-1">
-        <h3 className="text-xl sm:text-2xl font-black text-[#203128]">{t('createYourAccount')}</h3>
-        <p className="text-xs font-semibold text-[#718078]">
+        <h3 className="text-xl font-bold text-[#222222]">{t('createYourAccount')}</h3>
+        <p className="text-xs text-[#555555]">
           {t('joinEcosystem')}
         </p>
       </div>
 
       {/* Role selection / Account Type */}
       <div className="space-y-1.5">
-        <label className="text-[10px] font-black uppercase text-[#718078] tracking-wider block">
+        <label className="text-[10px] font-bold uppercase text-[#555555] tracking-wider block">
           {t('accountType')}
         </label>
         <div className="grid grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={() => setSignupRole('collector')}
-            className={`p-3 rounded-2xl border transition flex items-center justify-between cursor-pointer ${
+            className={`p-3 rounded-lg border-2 transition flex items-center justify-between cursor-pointer ${
               signupRole === 'collector'
-                ? 'bg-[#DDEBD8]/50 border-[#3F7655] ring-1 ring-[#3F7655]'
-                : 'bg-[#F8F5EA] border-[#3F7655]/15 hover:bg-[#DDEBD8]/30'
+                ? 'bg-[#EFF8F2] border-[#B8D9C8] text-[#1F6F5F]'
+                : 'bg-white border-[#D6E8DF] text-[#555555] hover:border-[#B8D9C8] hover:text-[#222222]'
             }`}
           >
             <div className="flex items-center gap-2 text-left">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
-                signupRole === 'collector' ? 'bg-[#3F7655] text-white' : 'bg-white text-[#3F7655]'
-              }`}>
+              <div className="w-7 h-7 rounded bg-white border-2 border-[#D6E8DF] flex items-center justify-center font-bold text-xs text-[#1F6F5F]">
                 <Truck className="w-3.5 h-3.5" />
               </div>
               <div>
-                <span className="text-xs font-black text-[#203128] block">{t('collectorRole')}</span>
-                <span className="text-[10px] text-[#718078] block">{t('registerLotsAndEarn') || 'Register lots & earn'}</span>
+                <span className="text-xs font-bold text-[#222222] block">{t('collectorRole')}</span>
+                <span className="text-[10px] text-[#555555] block">{t('registerLotsAndEarn') || 'Register lots & earn'}</span>
               </div>
             </div>
-            {signupRole === 'collector' && <Check className="w-4 h-4 text-[#3F7655]" />}
+            {signupRole === 'collector' && <Check className="w-4 h-4 text-[#1F6F5F]" />}
           </button>
 
           <button
             type="button"
             onClick={() => setSignupRole('recycler')}
-            className={`p-3 rounded-2xl border transition flex items-center justify-between cursor-pointer ${
+            className={`p-3 rounded-lg border-2 transition flex items-center justify-between cursor-pointer ${
               signupRole === 'recycler'
-                ? 'bg-[#244936]/10 border-[#244936] ring-1 ring-[#244936]'
-                : 'bg-[#F8F5EA] border-[#3F7655]/15 hover:bg-[#DDEBD8]/30'
+                ? 'bg-[#EFF8F2] border-[#B8D9C8] text-[#1F6F5F]'
+                : 'bg-white border-[#D6E8DF] text-[#555555] hover:border-[#B8D9C8] hover:text-[#222222]'
             }`}
           >
             <div className="flex items-center gap-2 text-left">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs ${
-                signupRole === 'recycler' ? 'bg-[#244936] text-white' : 'bg-white text-[#244936]'
-              }`}>
-                <ShieldCheck className="w-3.5 h-3.5 text-[#F2C94C]" />
+              <div className="w-7 h-7 rounded bg-white border-2 border-[#D6E8DF] flex items-center justify-center font-bold text-xs text-[#1F6F5F]">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#1F6F5F]" />
               </div>
               <div>
-                <span className="text-xs font-black text-[#203128] block">{t('recyclerRole')}</span>
-                <span className="text-[10px] text-[#718078] block">{t('procureAndRecycle') || 'Procure & recycle'}</span>
+                <span className="text-xs font-bold text-[#222222] block">{t('recyclerRole')}</span>
+                <span className="text-[10px] text-[#555555] block">{t('procureAndRecycle') || 'Procure & recycle'}</span>
               </div>
             </div>
-            {signupRole === 'recycler' && <Check className="w-4 h-4 text-[#244936]" />}
+            {signupRole === 'recycler' && <Check className="w-4 h-4 text-[#1F6F5F]" />}
           </button>
         </div>
       </div>
 
       {/* Error / Success Notifications */}
       {errorMessage && (
-        <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-2xl flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+        <div className="p-3 bg-white border-2 border-[#D6E8DF] text-[#222222] text-xs font-medium rounded-lg flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-[#555555] shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold rounded-2xl flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="p-3 bg-[#EFF8F2] border-2 border-[#B8D9C8] text-[#1F6F5F] text-xs font-bold rounded-lg flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-[#1F6F5F] shrink-0" />
           <span>{successMessage}</span>
         </div>
       )}
@@ -152,36 +148,36 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
       {/* Signup Form */}
       <form onSubmit={handleSubmit} className="space-y-3.5">
         <div>
-          <label className="text-xs font-extrabold text-[#203128] block mb-1">
+          <label className="text-xs font-bold text-[#222222] block mb-1">
             {signupRole === 'recycler' ? (t('contactPersonName') || 'Contact Person Name *') : `${t('fullName')} *`}
           </label>
           <div className="relative">
-            <User className="w-4 h-4 text-[#718078] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <User className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               required
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               placeholder="Enter your full name"
-              className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:border-[#3F7655] focus:outline-none"
+              className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
             />
           </div>
         </div>
 
         {signupRole === 'recycler' && (
           <div>
-            <label className="text-xs font-extrabold text-[#203128] block mb-1">
+            <label className="text-xs font-bold text-[#222222] block mb-1">
               Company / Facility Name *
             </label>
             <div className="relative">
-              <Building className="w-4 h-4 text-[#718078] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Building className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 required
                 value={organizationName}
                 onChange={(e) => setOrganizationName(e.target.value)}
                 placeholder="Enter facility or company name"
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:border-[#3F7655] focus:outline-none"
+                className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
@@ -189,35 +185,35 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-extrabold text-[#203128] block mb-1">
+            <label className="text-xs font-bold text-[#222222] block mb-1">
               {t('phoneNumber')} *
             </label>
             <div className="relative">
-              <Phone className="w-4 h-4 text-[#718078] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Phone className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 required
                 value={signupPhone}
                 onChange={(e) => setSignupPhone(e.target.value)}
                 placeholder="+91 98401 23456"
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:border-[#3F7655] focus:outline-none"
+                className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-extrabold text-[#203128] block mb-1">
+            <label className="text-xs font-bold text-[#222222] block mb-1">
               {t('emailAddress')} *
             </label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-[#718078] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Mail className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="email"
                 required
                 value={signupEmail}
                 onChange={(e) => setSignupEmail(e.target.value)}
                 placeholder="name@domain.com"
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:border-[#3F7655] focus:outline-none"
+                className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
@@ -225,35 +221,35 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-extrabold text-[#203128] block mb-1">
+            <label className="text-xs font-bold text-[#222222] block mb-1">
               {t('password')} *
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-[#718078] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
                 required
                 value={signupPassword}
                 onChange={(e) => setSignupPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:border-[#3F7655] focus:outline-none"
+                className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-extrabold text-[#203128] block mb-1">
+            <label className="text-xs font-bold text-[#222222] block mb-1">
               {t('confirmPassword')} *
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-[#718078] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:border-[#3F7655] focus:outline-none"
+                className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
@@ -262,7 +258,7 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-3.5 rounded-2xl bg-[#3F7655] hover:bg-[#244936] disabled:opacity-60 text-white font-extrabold text-xs shadow-md transition flex items-center justify-center gap-2 cursor-pointer mt-3"
+          className="w-full py-2.5 rounded-lg bg-[#1F6F5F] hover:bg-[#2FA084] disabled:opacity-60 text-white font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer mt-3"
         >
           {isLoading ? (
             <>
@@ -280,12 +276,12 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
 
       {/* Switch to Login */}
       <div className="text-center pt-2">
-        <p className="text-xs font-semibold text-[#718078]">
+        <p className="text-xs font-medium text-[#555555]">
           {t('alreadyHaveAccount')}{' '}
           <button
             type="button"
             onClick={onSwitchToLogin}
-            className="font-extrabold text-[#3F7655] hover:underline cursor-pointer ml-1"
+            className="font-bold text-[#1F6F5F] hover:underline cursor-pointer ml-1"
           >
             {t('navLogin')}
           </button>

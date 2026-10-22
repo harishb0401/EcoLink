@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Phone, Clock, ShieldCheck, ArrowRight, Navigation } from 'lucide-react';
 import { mockRecyclers } from '../../data/mockData';
 import { structuredEWasteCategories } from '../../data/scrapPrices';
@@ -45,42 +45,42 @@ export default function Locations() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8F5EA] py-12 text-[#203128]">
+    <div className="min-h-screen bg-white py-12 text-[#222222]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[#DDEBD8] text-[#244936] text-xs font-extrabold uppercase tracking-wider border border-[#3F7655]/20">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white text-[#1F6F5F] text-xs font-bold uppercase tracking-wider border-2 border-[#D6E8DF]">
             <MapPin className="w-3.5 h-3.5" /> {t('recyclingPointsDirectoryBadge', 'RECYCLING POINTS DIRECTORY')}
           </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#203128] tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-bold text-[#222222] tracking-tight">
             {t('findAuthorizedPointsTitle', 'Find Authorized Recycling Points')}
           </h1>
-          <p className="text-base text-[#718078] font-medium">
+          <p className="text-base text-[#555555]">
             {t('findAuthorizedPointsSub', 'Locate CPCB & TNPCB verified e-waste collection hubs and material recovery facilities near you.')}
           </p>
         </div>
 
         {/* Filters Bar */}
-        <div className="bg-white p-6 rounded-[28px] border border-[#3F7655]/20 shadow-md space-y-4">
+        <div className="bg-[#F5FBF7] p-6 rounded-lg border-2 border-[#D6E8DF] space-y-4">
           <div className="relative">
-            <Search className="w-5 h-5 text-[#3F7655] absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('searchFacilityPlaceholder', 'Search by facility name or area...')}
-              className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-12 pr-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:border-[#3F7655] focus:outline-none"
+              className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2.5 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-1">
             <div>
-              <label className="text-[10px] font-black uppercase text-[#718078] block mb-1">{t('wasteTypeMaterialLabel', 'Waste Type / Material')}</label>
+              <label className="text-[10px] font-bold uppercase text-[#555555] block mb-1">{t('wasteTypeMaterialLabel', 'Waste Type / Material')}</label>
               <select
                 value={wasteTypeFilter}
                 onChange={(e) => setWasteTypeFilter(e.target.value)}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-xl px-3 py-2 text-xs font-bold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2 text-xs font-medium text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               >
                 <option value="ALL">{t('allMaterials', 'All Materials')}</option>
                 {structuredEWasteCategories && structuredEWasteCategories.map((c, i) => (
@@ -90,11 +90,11 @@ export default function Locations() {
             </div>
 
             <div>
-              <label className="text-[10px] font-black uppercase text-[#718078] block mb-1">{t('locationDistrictLabel', 'Location / District')}</label>
+              <label className="text-[10px] font-bold uppercase text-[#555555] block mb-1">{t('locationDistrictLabel', 'Location / District')}</label>
               <select
                 value={locationFilter}
                 onChange={(e) => setLocationFilter(e.target.value)}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-xl px-3 py-2 text-xs font-bold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2 text-xs font-medium text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               >
                 {locationsList.map((loc, i) => (
                   <option key={i} value={loc}>{loc === 'ALL' ? t('allDistricts', 'All Districts') : loc}</option>
@@ -103,11 +103,11 @@ export default function Locations() {
             </div>
 
             <div>
-              <label className="text-[10px] font-black uppercase text-[#718078] block mb-1">{t('distanceRadiusLabel', 'Distance Radius')}</label>
+              <label className="text-[10px] font-bold uppercase text-[#555555] block mb-1">{t('distanceRadiusLabel', 'Distance Radius')}</label>
               <select
                 value={distanceFilter}
                 onChange={(e) => setDistanceFilter(e.target.value)}
-                className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-xl px-3 py-2 text-xs font-bold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2 text-xs font-medium text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               >
                 <option value="ALL">{t('anyDistance', 'Any Distance')}</option>
                 <option value="10">{t('within10km', 'Within 10 km')}</option>
@@ -116,9 +116,9 @@ export default function Locations() {
             </div>
 
             <div>
-              <label className="text-[10px] font-black uppercase text-[#718078] block mb-1">{t('authorizationLabel', 'Authorization')}</label>
-              <div className="flex items-center gap-2 pt-1 text-xs font-bold text-[#3F7655]">
-                <ShieldCheck className="w-4 h-4" />
+              <label className="text-[10px] font-bold uppercase text-[#555555] block mb-1">{t('authorizationLabel', 'Authorization')}</label>
+              <div className="flex items-center gap-1.5 pt-2 text-xs font-medium text-[#1F6F5F]">
+                <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
                 <span>{t('cpcbVerifiedOnly', 'CPCB Verified Only')}</span>
               </div>
             </div>
@@ -129,42 +129,40 @@ export default function Locations() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Simulated Visual Map Area */}
-          <div className="lg:col-span-5 bg-white p-6 rounded-[32px] border border-[#3F7655]/20 shadow-md space-y-4 flex flex-col justify-between">
+          <div className="lg:col-span-5 bg-[#F5FBF7] p-6 rounded-lg border-2 border-[#D6E8DF] space-y-4 flex flex-col justify-between">
             <div>
-              <div className="flex items-center justify-between pb-3 border-b border-[#3F7655]/10">
-                <h3 className="text-sm font-black text-[#203128] flex items-center gap-2">
-                  <Navigation className="w-4 h-4 text-[#3F7655]" />
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#D6E8DF]">
+                <h3 className="text-sm font-bold text-[#222222] flex items-center gap-2">
+                  <Navigation className="w-4 h-4 text-[#1F6F5F]" />
                   <span>{t('interactiveMapView', 'Interactive Map View')}</span>
                 </h3>
-                <span className="text-[10px] font-extrabold text-[#3F7655] bg-[#DDEBD8] px-2.5 py-0.5 rounded-full">
+                <span className="text-[10px] font-medium text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2 py-0.5 rounded">
                   {t('facilitiesFoundCount', '{count} Facilities Found', { count: filteredRecyclers.length })}
                 </span>
               </div>
 
               {/* Map Graphic Canvas */}
-              <div className="mt-4 h-72 rounded-2xl bg-[#DDEBD8]/40 border border-[#3F7655]/20 relative overflow-hidden flex items-center justify-center">
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#3F7655_1px,transparent_1px)] [background-size:16px_16px]" />
-                
+              <div className="mt-4 h-72 rounded-lg bg-[#EFF8F2] border-2 border-[#D6E8DF] relative overflow-hidden flex items-center justify-center">
                 {filteredRecyclers.map((r, idx) => (
                   <button
                     key={r.id || idx}
                     onClick={() => setSelectedRecycler(r)}
                     style={{ top: `${20 + (idx * 18) % 60}%`, left: `${15 + (idx * 25) % 70}%` }}
-                    className="absolute p-2 bg-[#3F7655] hover:bg-[#244936] text-white rounded-full shadow-lg transition-transform hover:scale-125 cursor-pointer"
+                    className="absolute p-2 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-full transition-colors cursor-pointer"
                     title={r.companyName}
                   >
                     <MapPin className="w-4 h-4" />
                   </button>
                 ))}
 
-                <div className="bg-white/90 backdrop-blur px-4 py-2 rounded-full border border-[#3F7655]/20 shadow-sm text-xs font-black text-[#244936] pointer-events-none">
+                <div className="bg-white px-4 py-1.5 rounded-lg border-2 border-[#D6E8DF] text-xs font-bold text-[#222222] pointer-events-none">
                   {t('tnRecyclingMapGrid', 'Tamil Nadu Recycling Map Grid')}
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-[#FAF8F2] rounded-2xl border border-[#3F7655]/15 text-xs text-[#718078]">
-              <strong className="text-[#203128] font-bold block mb-1">{t('authorizationNoticeLabel', 'Authorization Notice:')}</strong>
+            <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF] text-xs text-[#555555]">
+              <strong className="text-[#222222] font-bold block mb-1">{t('authorizationNoticeLabel', 'Authorization Notice:')}</strong>
               {t('authorizationNoticeText', 'All points listed comply with Central Pollution Control Board (CPCB) Extended Producer Responsibility rules.')}
             </div>
           </div>
@@ -174,36 +172,36 @@ export default function Locations() {
             {filteredRecyclers.map((rec) => (
               <div
                 key={rec.id}
-                className="bg-white p-6 rounded-[28px] border border-[#3F7655]/20 shadow-md hover:border-[#3F7655]/50 transition space-y-4"
+                className="bg-[#F5FBF7] p-6 rounded-lg border-2 border-[#D6E8DF] hover:border-[#B8D9C8] transition space-y-4"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#3F7655]/10 pb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#D6E8DF] pb-3">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-black text-[#203128]">{rec.companyName}</h3>
+                      <h3 className="text-base font-bold text-[#222222]">{rec.companyName}</h3>
                       {rec.isAuthorized && (
-                        <span className="text-[10px] font-black text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                        <span className="text-[10px] font-medium text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2 py-0.5 rounded flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3 text-[#1F6F5F]" />
                           <span>{t('authorizedBadge', 'Authorized')}</span>
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[#718078] font-medium flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3.5 h-3.5 text-[#3F7655]" />
+                    <p className="text-xs text-[#555555] font-normal flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3.5 h-3.5 text-[#1F6F5F]" />
                       <span>{rec.location}</span>
                     </p>
                   </div>
 
-                  <span className="text-xs font-black text-[#3F7655] bg-[#DDEBD8] px-3 py-1 rounded-full self-start sm:self-auto">
+                  <span className="text-xs font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2.5 py-1 rounded self-start sm:self-auto">
                     {rec.distanceKm} km {t('away', 'away')}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase text-[#718078]">{t('acceptedWasteTypesLabel', 'Accepted Waste Types:')}</span>
+                    <span className="text-[10px] font-bold uppercase text-[#555555]">{t('acceptedWasteTypesLabel', 'Accepted Waste Types:')}</span>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {(rec.acceptedCategories || []).map((cat, cIdx) => (
-                        <span key={cIdx} className="px-2 py-0.5 bg-[#F8F5EA] border border-[#3F7655]/15 text-[#203128] rounded-md text-[10px] font-bold">
+                        <span key={cIdx} className="px-2 py-0.5 bg-white border-2 border-[#D6E8DF] text-[#222222] rounded text-[10px] font-medium">
                           {tCategory(cat)}
                         </span>
                       ))}
@@ -211,24 +209,24 @@ export default function Locations() {
                   </div>
 
                   <div className="space-y-1">
-                    <div className="flex items-center gap-1.5 text-[#718078]">
-                      <Clock className="w-3.5 h-3.5 text-[#3F7655]" />
-                      <span className="font-semibold text-[11px]">{rec.operatingHours}</span>
+                    <div className="flex items-center gap-1.5 text-[#555555]">
+                      <Clock className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                      <span className="font-normal text-[11px]">{rec.operatingHours}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[#718078]">
-                      <Phone className="w-3.5 h-3.5 text-[#3F7655]" />
-                      <span className="font-semibold text-[11px]">{rec.contactPhone}</span>
+                    <div className="flex items-center gap-1.5 text-[#555555]">
+                      <Phone className="w-3.5 h-3.5 text-[#1F6F5F]" />
+                      <span className="font-normal text-[11px]">{rec.contactPhone}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-[#3F7655]/10 flex items-center justify-between">
-                  <span className="text-[11px] text-[#718078] font-medium">
+                <div className="pt-3 border-t-2 border-[#D6E8DF] flex items-center justify-between">
+                  <span className="text-[11px] text-[#555555]">
                     Reg No: {rec.cpcbRegistrationNo}
                   </span>
                   <button
                     onClick={() => setSelectedRecycler(rec)}
-                    className="px-4 py-2 rounded-xl bg-[#3F7655] hover:bg-[#244936] text-white font-extrabold text-xs shadow transition cursor-pointer flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-lg bg-[#1F6F5F] hover:bg-[#2FA084] text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5"
                   >
                     <span>{t('viewDetails', 'View Details')}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -241,24 +239,24 @@ export default function Locations() {
 
         {/* Selected Recycler Details Modal */}
         {selectedRecycler && (
-          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white rounded-[32px] border border-[#3F7655]/20 max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl animate-scaleUp">
-              <div className="flex items-center justify-between pb-4 border-b border-[#3F7655]/15">
+          <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+            <div className="bg-[#F5FBF7] rounded-lg border-2 border-[#D6E8DF] max-w-lg w-full p-6 sm:p-8 space-y-5">
+              <div className="flex items-center justify-between pb-3 border-b-2 border-[#D6E8DF]">
                 <div>
-                  <span className="text-[10px] font-black uppercase text-[#3F7655] bg-[#DDEBD8] px-2.5 py-0.5 rounded-full">
+                  <span className="text-[10px] font-bold uppercase text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2 py-0.5 rounded">
                     {t('recyclerDetailsTitle', 'RECYCLER DETAILS')}
                   </span>
-                  <h3 className="text-xl font-black text-[#203128] mt-1">{selectedRecycler.companyName}</h3>
+                  <h3 className="text-lg font-bold text-[#222222] mt-1">{selectedRecycler.companyName}</h3>
                 </div>
                 <button
                   onClick={() => setSelectedRecycler(null)}
-                  className="p-2 rounded-full hover:bg-slate-100 text-slate-500 font-bold text-sm cursor-pointer"
+                  className="p-1.5 rounded-lg text-[#555555] hover:text-[#222222] cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="space-y-3 text-xs font-semibold text-[#203128]">
+              <div className="space-y-2.5 text-xs text-[#222222]">
                 <p><strong>{t('locationLabel', 'Location')}:</strong> {selectedRecycler.location}</p>
                 <p><strong>{t('authorizationStatusLabel', 'Authorization Status')}:</strong> {selectedRecycler.authorizationStatus}</p>
                 <p><strong>{t('regNoLabel', 'Registration No')}:</strong> {selectedRecycler.cpcbRegistrationNo}</p>
@@ -270,7 +268,7 @@ export default function Locations() {
                   <strong>{t('acceptedMaterialsLabel', 'Accepted Materials')}:</strong>
                   <div className="flex flex-wrap gap-1 mt-1">
                     {(selectedRecycler.acceptedCategories || []).map((c, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-[#F8F5EA] border border-[#3F7655]/15 rounded text-[10px] font-bold">
+                      <span key={i} className="px-2 py-0.5 bg-white border-2 border-[#D6E8DF] rounded text-[10px] font-medium text-[#222222]">
                         {tCategory(c)}
                       </span>
                     ))}
@@ -278,10 +276,10 @@ export default function Locations() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-[#3F7655]/10 flex justify-end gap-3">
+              <div className="pt-4 border-t-2 border-[#D6E8DF] flex justify-end gap-2.5">
                 <button
                   onClick={() => setSelectedRecycler(null)}
-                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl cursor-pointer"
+                  className="px-4 py-2 bg-[#F5FBF7] border-2 border-[#D6E8DF] hover:border-[#B8D9C8] text-[#555555] hover:text-[#222222] font-bold text-xs rounded-lg cursor-pointer"
                 >
                   {t('close', 'Close')}
                 </button>
@@ -290,7 +288,7 @@ export default function Locations() {
                     setSelectedRecycler(null);
                     navigate('/login');
                   }}
-                  className="px-5 py-2.5 bg-[#3F7655] hover:bg-[#244936] text-white font-extrabold text-xs rounded-xl shadow cursor-pointer"
+                  className="px-4 py-2 bg-[#1F6F5F] hover:bg-[#2FA084] text-white font-bold text-xs rounded-lg cursor-pointer"
                 >
                   {t('matchWasteLotWithRecycler', 'Match Waste Lot with this Recycler')} →
                 </button>

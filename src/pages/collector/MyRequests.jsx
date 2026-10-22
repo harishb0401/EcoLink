@@ -56,40 +56,40 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
   const hasPending = pendingLotsCount > 0 || failedLotsCount > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white text-[#222222]">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-black uppercase tracking-widest text-[#3F7655] bg-[#DDEBD8] px-3 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#1F6F5F] bg-[#F5FBF7] border-2 border-[#D6E8DF] px-3 py-1 rounded">
               {t('collectorPortal', 'Collector Portal')}
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-[#203128] mt-1.5">{t('myEWasteRequests', 'My E-Waste Requests')}</h1>
-          <p className="text-xs sm:text-sm text-[#718078]">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#222222] mt-2">{t('myEWasteRequests', 'My E-Waste Requests')}</h1>
+          <p className="text-xs sm:text-sm text-[#555555]">
             {t('trackRequestsSubtitle', 'Track your declared e-waste requests, review incoming offers from authorized recyclers, and manage handovers.')}
           </p>
         </div>
 
         <button
           onClick={() => navigate('/collector/register-waste')}
-          className="px-5 py-3 bg-[#3F7655] hover:bg-[#244936] text-white rounded-2xl font-black text-xs shadow-md transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+          className="px-5 py-3 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>{t('createEWasteRequest', 'Create E-Waste Request')}</span>
         </button>
       </div>
 
-      {/* Sync Status Banner (Requirement 11) */}
+      {/* Sync Status Banner */}
       {hasPending ? (
-        <div className="p-4 bg-amber-50 border border-amber-300 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-sm animate-in fade-in duration-150">
+        <div className="p-4 bg-[#EFF8F2] border-2 border-[#D6E8DF] rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5">
-            <span className="w-3 h-3 rounded-full bg-amber-500 animate-pulse shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#1F6F5F] shrink-0" />
             <div>
-              <span className="font-extrabold text-amber-950">
+              <span className="font-bold text-[#222222]">
                 {pendingLotsCount} {pendingLotsCount === 1 ? 'record' : 'records'} waiting to sync
               </span>
-              <p className="text-[11px] text-amber-800">
+              <p className="text-[11px] text-[#555555]">
                 Data is saved safely offline on this device. It will upload automatically once connection is established.
               </p>
             </div>
@@ -97,19 +97,19 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
           {online && (
             <button
               onClick={() => syncPendingRecords()}
-              className="px-4 py-2 bg-[#3F7655] hover:bg-[#244936] text-white rounded-xl font-black text-xs shadow-sm transition flex items-center gap-1.5 cursor-pointer shrink-0 self-start sm:self-auto"
+              className="px-4 py-2 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shrink-0 self-start sm:self-auto"
             >
               <span>Sync Now</span>
             </button>
           )}
         </div>
       ) : allLots.length > 0 && (
-        <div className="px-4 py-2.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center justify-between text-xs text-emerald-950 font-bold shadow-2xs">
+        <div className="px-4 py-2.5 bg-[#EFF8F2] border-2 border-[#D6E8DF] rounded-lg flex items-center justify-between text-xs text-[#222222] font-bold">
           <span className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <CheckCircle2 className="w-4 h-4 text-[#1F6F5F]" />
             <span>All records synced</span>
           </span>
-          <span className="text-[11px] text-emerald-700 font-semibold">Local & cloud database synchronized</span>
+          <span className="text-[11px] text-[#555555] font-semibold">Local & cloud database synchronized</span>
         </div>
       )}
 
@@ -117,71 +117,71 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div 
           onClick={() => setStatusFilter('AWAITING_OFFERS')}
-          className={`p-4 rounded-2xl border transition cursor-pointer ${
+          className={`p-4 rounded-lg border-2 transition cursor-pointer ${
             statusFilter === 'AWAITING_OFFERS' 
-              ? 'bg-[#3F7655] text-white border-[#3F7655] shadow-sm' 
-              : 'bg-white border-[#3F7655]/15 hover:border-[#3F7655]/40 text-[#203128]'
+              ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' 
+              : 'bg-[#F5FBF7] border-[#D6E8DF] hover:border-[#B8D9C8] text-[#222222]'
           }`}
         >
-          <span className={`text-[10px] font-bold uppercase tracking-wider block ${statusFilter === 'AWAITING_OFFERS' ? 'text-white/80' : 'text-[#718078]'}`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${statusFilter === 'AWAITING_OFFERS' ? 'text-white/80' : 'text-[#555555]'}`}>
             {t('statusAWAITING_OFFERS', 'Awaiting Offers')}
           </span>
-          <span className="text-xl font-black mt-1 block">{awaitingCount}</span>
+          <span className="text-xl font-bold mt-1 block">{awaitingCount}</span>
         </div>
 
         <div 
           onClick={() => setStatusFilter('OFFERS_RECEIVED')}
-          className={`p-4 rounded-2xl border transition cursor-pointer ${
+          className={`p-4 rounded-lg border-2 transition cursor-pointer ${
             statusFilter === 'OFFERS_RECEIVED' 
-              ? 'bg-[#3F7655] text-white border-[#3F7655] shadow-sm' 
-              : 'bg-white border-[#3F7655]/15 hover:border-[#3F7655]/40 text-[#203128]'
+              ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' 
+              : 'bg-[#F5FBF7] border-[#D6E8DF] hover:border-[#B8D9C8] text-[#222222]'
           }`}
         >
-          <span className={`text-[10px] font-bold uppercase tracking-wider block ${statusFilter === 'OFFERS_RECEIVED' ? 'text-white/80' : 'text-[#718078]'}`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${statusFilter === 'OFFERS_RECEIVED' ? 'text-white/80' : 'text-[#555555]'}`}>
             {t('statusOFFERS_RECEIVED', 'Offers Received')}
           </span>
-          <span className="text-xl font-black mt-1 block">{offersReceivedCount}</span>
+          <span className="text-xl font-bold mt-1 block">{offersReceivedCount}</span>
         </div>
 
         <div 
           onClick={() => setStatusFilter('OFFER_ACCEPTED')}
-          className={`p-4 rounded-2xl border transition cursor-pointer ${
+          className={`p-4 rounded-lg border-2 transition cursor-pointer ${
             statusFilter === 'OFFER_ACCEPTED' 
-              ? 'bg-[#3F7655] text-white border-[#3F7655] shadow-sm' 
-              : 'bg-white border-[#3F7655]/15 hover:border-[#3F7655]/40 text-[#203128]'
+              ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' 
+              : 'bg-[#F5FBF7] border-[#D6E8DF] hover:border-[#B8D9C8] text-[#222222]'
           }`}
         >
-          <span className={`text-[10px] font-bold uppercase tracking-wider block ${statusFilter === 'OFFER_ACCEPTED' ? 'text-white/80' : 'text-[#718078]'}`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${statusFilter === 'OFFER_ACCEPTED' ? 'text-white/80' : 'text-[#555555]'}`}>
             {t('offerAcceptedInTransit', 'Offer Accepted / In Transit')}
           </span>
-          <span className="text-xl font-black mt-1 block">{acceptedCount}</span>
+          <span className="text-xl font-bold mt-1 block">{acceptedCount}</span>
         </div>
 
         <div 
           onClick={() => setStatusFilter('COMPLETED')}
-          className={`p-4 rounded-2xl border transition cursor-pointer ${
+          className={`p-4 rounded-lg border-2 transition cursor-pointer ${
             statusFilter === 'COMPLETED' 
-              ? 'bg-[#3F7655] text-white border-[#3F7655] shadow-sm' 
-              : 'bg-white border-[#3F7655]/15 hover:border-[#3F7655]/40 text-[#203128]'
+              ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]' 
+              : 'bg-[#F5FBF7] border-[#D6E8DF] hover:border-[#B8D9C8] text-[#222222]'
           }`}
         >
-          <span className={`text-[10px] font-bold uppercase tracking-wider block ${statusFilter === 'COMPLETED' ? 'text-white/80' : 'text-[#718078]'}`}>
+          <span className={`text-[10px] font-bold uppercase tracking-wider block ${statusFilter === 'COMPLETED' ? 'text-white/80' : 'text-[#555555]'}`}>
             {t('statusCOMPLETED', 'Completed')}
           </span>
-          <span className="text-xl font-black mt-1 block">{completedCount}</span>
+          <span className="text-xl font-bold mt-1 block">{completedCount}</span>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white p-4 sm:p-5 rounded-[28px] border border-[#3F7655]/20 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+      <div className="bg-[#F5FBF7] p-4 sm:p-5 rounded-lg border-2 border-[#D6E8DF] flex flex-col md:flex-row gap-4 justify-between items-center">
         <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-[#3F7655] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('searchRequestPlaceholder', 'Search request ID, material, or location...')}
-            className="w-full bg-[#F8F5EA] border border-[#3F7655]/20 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+            className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2.5 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
           />
         </div>
 
@@ -197,10 +197,10 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
             <button
               key={item.key}
               onClick={() => setStatusFilter(item.key)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition whitespace-nowrap cursor-pointer border-2 ${
                 statusFilter === item.key
-                  ? 'bg-[#3F7655] text-white shadow-sm'
-                  : 'bg-[#F8F5EA] text-[#203128] border border-[#3F7655]/15 hover:bg-[#DDEBD8]'
+                  ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
+                  : 'bg-white text-[#222222] border-[#D6E8DF] hover:border-[#B8D9C8]'
               }`}
             >
               {item.label}
@@ -208,18 +208,18 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
           ))}
 
           {/* View Toggle */}
-          <div className="hidden lg:flex items-center bg-[#F8F5EA] p-1 rounded-xl border border-[#3F7655]/15 ml-2">
+          <div className="hidden lg:flex items-center bg-white p-1 rounded-lg border-2 border-[#D6E8DF] ml-2">
             <button
               onClick={() => setViewMode('cards')}
               title="Cards View"
-              className={`p-1.5 rounded-lg transition ${viewMode === 'cards' ? 'bg-white shadow text-[#3F7655]' : 'text-[#718078]'}`}
+              className={`p-1.5 rounded-md transition ${viewMode === 'cards' ? 'bg-[#1F6F5F] text-white' : 'text-[#555555] hover:text-[#222222]'}`}
             >
               <LayoutGrid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode('table')}
               title="Table View"
-              className={`p-1.5 rounded-lg transition ${viewMode === 'table' ? 'bg-white shadow text-[#3F7655]' : 'text-[#718078]'}`}
+              className={`p-1.5 rounded-md transition ${viewMode === 'table' ? 'bg-[#1F6F5F] text-white' : 'text-[#555555] hover:text-[#222222]'}`}
             >
               <ListFilter className="w-4 h-4" />
             </button>
@@ -242,64 +242,61 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
               return (
                 <div
                   key={request.id}
-                  className="bg-white p-6 rounded-[32px] border border-[#3F7655]/20 shadow-md hover:border-[#3F7655]/50 transition flex flex-col justify-between space-y-4"
+                  className="bg-[#F5FBF7] p-6 rounded-lg border-2 border-[#D6E8DF] hover:border-[#B8D9C8] transition flex flex-col justify-between space-y-4"
                 >
                   <div className="space-y-3">
                     {/* Header */}
-                    <div className="flex items-start justify-between gap-2 border-b border-[#3F7655]/10 pb-3">
+                    <div className="flex items-start justify-between gap-2 border-b-2 border-[#D6E8DF] pb-3">
                       <div>
-                        <span className="text-[10px] font-black uppercase tracking-wider text-[#3F7655] bg-[#DDEBD8] px-2.5 py-0.5 rounded-full">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2.5 py-0.5 rounded">
                           {tCategory(request.category)}
                         </span>
-                        <h3 className="text-base font-black text-[#203128] mt-1.5">{request.material}</h3>
-                        <span className="text-xs font-mono font-bold text-[#718078]">{request.id}</span>
+                        <h3 className="text-base font-bold text-[#222222] mt-1.5">{request.material}</h3>
+                        <span className="text-xs font-mono text-[#555555]">{request.id}</span>
                       </div>
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                         <StatusBadge status={request.status} />
                         {request.syncStatus === 'pending' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-950 border border-amber-300 inline-flex items-center gap-1 shadow-2xs">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 animate-pulse" />
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-[#555555] border-2 border-[#D6E8DF] inline-flex items-center gap-1">
                             <span>Pending sync</span>
                           </span>
                         ) : request.syncStatus === 'failed' ? (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-rose-100 text-rose-950 border border-rose-300 inline-flex items-center gap-1 shadow-2xs">
-                            <span>✕</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-[#222222] border-2 border-[#D6E8DF] inline-flex items-center gap-1">
                             <span>Sync failed</span>
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 inline-flex items-center gap-1">
-                            <span>✓</span>
-                            <span>Synced</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-[#1F6F5F] border-2 border-[#D6E8DF] inline-flex items-center gap-1">
+                            <span>✓ Synced</span>
                           </span>
                         )}
                       </div>
                     </div>
 
                     {/* Details Grid */}
-                    <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-[#718078]">
-                      <div className="p-2.5 bg-[#F8F5EA] rounded-xl">
-                        <span className="text-[10px] text-[#718078] block uppercase font-bold">{t('quantityLabel', 'Quantity')}</span>
-                        <span className="text-sm font-black text-[#203128]">{qty} {unit}</span>
+                    <div className="grid grid-cols-2 gap-2 text-xs font-semibold text-[#555555]">
+                      <div className="p-2.5 bg-white border-2 border-[#D6E8DF] rounded-lg">
+                        <span className="text-[10px] text-[#555555] block uppercase font-bold">{t('quantityLabel', 'Quantity')}</span>
+                        <span className="text-sm font-bold text-[#222222]">{qty} {unit}</span>
                       </div>
 
-                      <div className="p-2.5 bg-[#F8F5EA] rounded-xl">
-                        <span className="text-[10px] text-[#718078] block uppercase font-bold">{t('submissionDate', 'Submission Date')}</span>
-                        <span className="text-xs font-bold text-[#203128]">{request.collectionDate || request.createdDate || 'Today'}</span>
+                      <div className="p-2.5 bg-white border-2 border-[#D6E8DF] rounded-lg">
+                        <span className="text-[10px] text-[#555555] block uppercase font-bold">{t('submissionDate', 'Submission Date')}</span>
+                        <span className="text-xs font-bold text-[#222222]">{request.collectionDate || request.createdDate || 'Today'}</span>
                       </div>
                     </div>
 
                     {/* Offers Status Highlight */}
-                    <div className="p-3 bg-[#FAF8F2] rounded-2xl border border-[#3F7655]/15 flex items-center justify-between text-xs">
+                    <div className="p-3 bg-white rounded-lg border-2 border-[#D6E8DF] flex items-center justify-between text-xs">
                       <div>
-                        <span className="text-[10px] font-extrabold uppercase text-[#718078] block">{t('receivedOffers', 'Received Offers')}</span>
-                        <span className="font-black text-[#203128]">
+                        <span className="text-[10px] font-bold uppercase text-[#555555] block">{t('receivedOffers', 'Received Offers')}</span>
+                        <span className="font-bold text-[#222222]">
                           {reqOffers.length > 0 ? (
-                            <span className="text-emerald-700 font-extrabold flex items-center gap-1">
+                            <span className="text-[#1F6F5F] font-bold flex items-center gap-1">
                               <CheckCircle2 className="w-3.5 h-3.5" />
                               {reqOffers.length} {reqOffers.length === 1 ? t('offerCountOne', 'Offer') : t('offerCountMany', 'Offers')} {t('received', 'Received')}
                             </span>
                           ) : (
-                            <span className="text-amber-700 font-bold flex items-center gap-1">
+                            <span className="text-[#555555] font-medium flex items-center gap-1">
                               <Clock className="w-3.5 h-3.5" />
                               {t('awaitingRecyclerOffers', 'Awaiting Recycler Offers')}
                             </span>
@@ -308,29 +305,29 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[10px] font-extrabold uppercase text-[#718078] block">{t('benchmarkPriceLabel', 'Benchmark')}</span>
-                        <span className="font-extrabold text-[#3F7655]">₹{benchmark}/{unit}</span>
+                        <span className="text-[10px] font-bold uppercase text-[#555555] block">{t('benchmarkPriceLabel', 'Benchmark')}</span>
+                        <span className="font-bold text-[#1F6F5F]">₹{benchmark}/{unit}</span>
                       </div>
                     </div>
 
                     {/* Recycler Assigned Banner (if accepted) */}
                     {request.selectedRecyclerName && (
-                      <div className="p-2.5 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-900 font-bold flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                      <div className="p-2.5 bg-[#EFF8F2] border-2 border-[#D6E8DF] rounded-lg text-xs text-[#1F6F5F] font-bold flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#1F6F5F] shrink-0" />
                         <span className="truncate">{t('acceptedRecycler', 'Accepted: {name}', { name: request.selectedRecyclerName })}</span>
                       </div>
                     )}
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-3 border-t border-[#3F7655]/10 flex items-center justify-between">
-                    <span className="text-[11px] text-[#718078] font-semibold truncate max-w-[140px]">
+                  <div className="pt-3 border-t-2 border-[#D6E8DF] flex items-center justify-between">
+                    <span className="text-[11px] text-[#555555] font-semibold truncate max-w-[140px]">
                       {request.location}
                     </span>
 
                     <button
                       onClick={() => navigate(`/collector/requests/${request.id}`)}
-                      className="px-4 py-2 bg-[#3F7655] hover:bg-[#244936] text-white rounded-xl font-bold text-xs shadow transition flex items-center gap-1.5 cursor-pointer"
+                      className="px-4 py-2 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
                     >
                       <span>{t('viewDetails', 'View Details')}</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -342,10 +339,10 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
           </div>
         ) : (
           /* Table View */
-          <div className="bg-white rounded-[32px] border border-[#3F7655]/20 shadow-md overflow-hidden">
+          <div className="bg-[#F5FBF7] rounded-lg border-2 border-[#D6E8DF] overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#FAF8F2] border-b border-[#3F7655]/15 text-[#203128] font-black uppercase text-[11px] tracking-wider">
+                <thead className="bg-[#EFF8F2] border-b-2 border-[#D6E8DF] text-[#222222] font-bold uppercase text-[11px] tracking-wider">
                   <tr>
                     <th className="px-6 py-4">{t('requestIdCol', 'Request ID')}</th>
                     <th className="px-6 py-4">{t('wasteMaterialCol', 'Waste Material')}</th>
@@ -356,40 +353,40 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
                     <th className="px-6 py-4 text-right">{t('actions', 'Actions')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#3F7655]/10 font-semibold text-[#203128]">
+                <tbody className="divide-y-2 divide-[#D6E8DF] font-semibold text-[#222222]">
                   {filteredRequests.map((request) => {
                     const reqOffers = getOffersForLot(request.id);
                     const qty = request.quantity || request.totalWeightKg || 1;
                     const unit = request.unit || 'kg';
 
                     return (
-                      <tr key={request.id} className="hover:bg-[#F8F5EA]/70 transition">
-                        <td className="px-6 py-4 font-mono font-black text-[#203128]">
+                      <tr key={request.id} className="hover:bg-[#EFF8F2] transition">
+                        <td className="px-6 py-4 font-mono font-bold text-[#222222]">
                           {request.id}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="font-extrabold text-[#203128]">{request.material}</div>
-                          <div className="text-[11px] text-[#718078]">{tCategory(request.category)}</div>
+                          <div className="font-bold text-[#222222]">{request.material}</div>
+                          <div className="text-[11px] text-[#555555]">{tCategory(request.category)}</div>
                         </td>
-                        <td className="px-6 py-4 font-extrabold">
+                        <td className="px-6 py-4 font-bold">
                           {qty} {unit}
                         </td>
-                        <td className="px-6 py-4 text-[#718078]">
+                        <td className="px-6 py-4 text-[#555555]">
                           {request.collectionDate || request.createdDate || 'Today'}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col gap-1 items-start">
                             <StatusBadge status={request.status} size="sm" />
                             {request.syncStatus === 'pending' ? (
-                              <span className="text-[10px] font-black text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
-                                🟠 Pending sync
+                              <span className="text-[10px] font-bold text-[#555555] bg-white px-2 py-0.5 rounded border-2 border-[#D6E8DF]">
+                                Pending sync
                               </span>
                             ) : request.syncStatus === 'failed' ? (
-                              <span className="text-[10px] font-black text-rose-800 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-300">
-                                ❌ Sync failed
+                              <span className="text-[10px] font-bold text-[#222222] bg-white px-2 py-0.5 rounded border-2 border-[#D6E8DF]">
+                                Sync failed
                               </span>
                             ) : (
-                              <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                              <span className="text-[10px] font-bold text-[#1F6F5F] bg-white px-2 py-0.5 rounded border-2 border-[#D6E8DF]">
                                 ✓ Synced
                               </span>
                             )}
@@ -397,18 +394,18 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
                         </td>
                         <td className="px-6 py-4">
                           {reqOffers.length > 0 ? (
-                            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[11px] inline-flex items-center gap-1">
+                            <span className="px-2.5 py-1 bg-white text-[#1F6F5F] border-2 border-[#D6E8DF] rounded font-bold text-[11px] inline-flex items-center gap-1">
                               <CheckCircle2 className="w-3 h-3" />
                               {reqOffers.length} {reqOffers.length === 1 ? t('offerCountOne', 'Offer') : t('offerCountMany', 'Offers')}
                             </span>
                           ) : (
-                            <span className="text-[#718078] text-[11px] italic">0 ({t('awaiting', 'Awaiting')})</span>
+                            <span className="text-[#555555] text-[11px] italic">0 ({t('awaiting', 'Awaiting')})</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button
                             onClick={() => navigate(`/collector/requests/${request.id}`)}
-                            className="px-3.5 py-1.5 bg-[#3F7655] hover:bg-[#244936] text-white rounded-xl font-bold text-xs shadow transition inline-flex items-center gap-1 cursor-pointer"
+                            className="px-3.5 py-1.5 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition inline-flex items-center gap-1 cursor-pointer"
                           >
                             <span>{t('viewDetails', 'View Details')}</span>
                             <ArrowRight className="w-3 h-3" />
@@ -424,19 +421,19 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
         )
       ) : (
         /* Empty State */
-        <div className="bg-white p-12 rounded-[32px] border border-[#3F7655]/20 text-center space-y-4 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-[#DDEBD8] text-[#3F7655] flex items-center justify-center mx-auto font-black text-xl">
+        <div className="bg-[#F5FBF7] p-12 rounded-lg border-2 border-[#D6E8DF] text-center space-y-4">
+          <div className="w-16 h-16 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center mx-auto font-bold text-xl">
             <Package className="w-8 h-8" />
           </div>
-          <h3 className="text-lg font-black text-[#203128]">{t('noEWasteRequestsFound', 'No E-Waste Requests Found')}</h3>
-          <p className="text-xs text-[#718078] max-w-sm mx-auto">
+          <h3 className="text-lg font-bold text-[#222222]">{t('noEWasteRequestsFound', 'No E-Waste Requests Found')}</h3>
+          <p className="text-xs text-[#555555] max-w-sm mx-auto">
             {searchQuery 
               ? t('noRequestsMatchedQuery', 'No requests matched your filter parameters. Try clearing your search query.') 
               : t('noRequestsSubmittedYet', 'You have not submitted any e-waste requests yet. Create a new request to notify authorized recyclers in your area.')}
           </p>
           <button
             onClick={() => navigate('/collector/register-waste')}
-            className="px-6 py-2.5 bg-[#3F7655] hover:bg-[#244936] text-white rounded-xl font-bold text-xs shadow transition cursor-pointer"
+            className="px-6 py-2.5 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition cursor-pointer"
           >
             {t('createFirstEWasteRequest', 'Create First E-Waste Request')}
           </button>

@@ -7,43 +7,80 @@ export default {
   theme: {
     extend: {
       colors: {
+        primary: {
+          DEFAULT: '#1F6F5F',
+          hover: '#2FA084',
+        },
+        secondary: {
+          DEFAULT: '#2FA084',
+        },
+        accent: {
+          DEFAULT: '#6FCF97',
+        },
+        border: {
+          DEFAULT: '#D6E8DF',
+          active: '#B8D9C8',
+        },
+        card: {
+          DEFAULT: '#F5FBF7',
+          highlight: '#EFF8F2',
+        },
+        text: {
+          primary: '#222222',
+          secondary: '#555555',
+        },
+        background: {
+          DEFAULT: '#FFFFFF',
+          page: '#FFFFFF',
+          card: '#F5FBF7',
+          highlight: '#EFF8F2',
+        },
+        // Mapped legacy tokens to smooth migration
         cream: {
-          50: '#FAF8F2',
-          100: '#F8F5EA',
-          200: '#F0EAD6',
-          300: '#E6DCC4',
+          50: '#F5FBF7',
+          100: '#EFF8F2',
+          200: '#D6E8DF',
+          300: '#B8D9C8',
         },
         ecogreen: {
-          50: '#F2F8F4',
-          100: '#DDEBD8',
-          200: '#B8DBAF',
-          500: '#3F7655',
-          700: '#244936',
-          900: '#14291E',
+          50: '#F5FBF7',
+          100: '#EFF8F2',
+          200: '#D6E8DF',
+          500: '#1F6F5F',
+          700: '#1F6F5F',
+          900: '#1F6F5F',
         },
         ecoyellow: {
-          400: '#F2C94C',
-          500: '#E2B83B',
+          400: '#1F6F5F',
+          500: '#2FA084',
         },
         ecobrown: {
-          500: '#8B6B4A',
-          700: '#6B4F34',
+          500: '#222222',
+          700: '#555555',
         },
         ecotext: {
-          dark: '#203128',
-          muted: '#718078',
+          dark: '#222222',
+          muted: '#555555',
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
-        'card': '20px',
-        'large': '28px',
+        'card': '8px',
+        'large': '10px',
       },
       boxShadow: {
-        'soft': '0 6px 24px -4px rgba(32, 49, 40, 0.06), 0 2px 8px -2px rgba(32, 49, 40, 0.03)',
-        'soft-hover': '0 12px 32px -6px rgba(32, 49, 40, 0.12), 0 4px 12px -2px rgba(32, 49, 40, 0.04)',
+        none: 'none',
+        sm: 'none',
+        DEFAULT: 'none',
+        md: 'none',
+        lg: 'none',
+        xl: 'none',
+        '2xl': 'none',
+        inner: 'none',
+        'soft': 'none',
+        'soft-hover': 'none',
       }
     },
   },

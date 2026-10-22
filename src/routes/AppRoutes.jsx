@@ -5,7 +5,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import PublicLayout from '../components/Layout/PublicLayout';
 import CollectorLayout from '../components/Layout/CollectorLayout';
 import RecyclerLayout from '../components/Layout/RecyclerLayout';
-import AdminLayout from '../components/Layout/AdminLayout';
 
 // Public Pages
 import Home from '../pages/public/Home';
@@ -33,17 +32,6 @@ import Compliance from '../pages/recycler/Compliance';
 import RecyclerProfile from '../pages/recycler/RecyclerProfile';
 import RecyclerNotifications from '../pages/recycler/RecyclerNotifications';
 
-
-// Admin Pages
-import AdminDashboard from '../pages/admin/AdminDashboard';
-import Collectors from '../pages/admin/Collectors';
-import Recyclers from '../pages/admin/Recyclers';
-import AdminWasteLots from '../pages/admin/AdminWasteLots';
-import AdminTransactions from '../pages/admin/AdminTransactions';
-import Verification from '../pages/admin/Verification';
-import AdminProfile from '../pages/admin/AdminProfile';
-import AdminNotifications from '../pages/admin/AdminNotifications';
-
 // 404 Fallback Page
 import NotFound from '../pages/NotFound';
 
@@ -57,9 +45,7 @@ export default function AppRoutes({
   onLotCreated,
   onSubmitOffer,
   onAcceptOffer,
-  transactions,
-  collectors,
-  recyclers
+  transactions
 }) {
   return (
     <Routes>
@@ -106,17 +92,8 @@ export default function AppRoutes({
         <Route path="notifications" element={<RecyclerNotifications />} />
       </Route>
 
-      {/* 4. ADMIN ROUTES */}
-      <Route path="/admin" element={<AdminLayout currentUser={currentUser} onLogout={onLogout} />}>
-        <Route path="dashboard" element={<AdminDashboard collectors={collectors} recyclers={recyclers} materialLots={materialLots} transactions={transactions} adminProfile={currentUser} />} />
-        <Route path="collectors" element={<Collectors collectors={collectors} />} />
-        <Route path="recyclers" element={<Recyclers recyclers={recyclers} />} />
-        <Route path="waste-lots" element={<AdminWasteLots materialLots={materialLots} />} />
-        <Route path="transactions" element={<AdminTransactions transactions={transactions} />} />
-        <Route path="verification" element={<Verification recyclers={recyclers} />} />
-        <Route path="profile" element={<AdminProfile currentUser={currentUser} onProfileUpdated={onUserUpdated} />} />
-        <Route path="notifications" element={<AdminNotifications />} />
-      </Route>
+      {/* Redirect any legacy /admin path to login */}
+      <Route path="/admin/*" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

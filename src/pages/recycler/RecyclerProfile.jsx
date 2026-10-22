@@ -102,42 +102,42 @@ export default function RecyclerProfile({ currentUser, onProfileUpdated }) {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto bg-white text-[#222222]">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-[#203128]">{t('navProfile')}</h1>
-        <p className="text-xs sm:text-sm text-[#718078]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#222222]">{t('navProfile')}</h1>
+        <p className="text-xs sm:text-sm text-[#555555]">
           {t('cpcbVerifLayerSub')}
         </p>
       </div>
 
       {savedSuccess && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-2">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+        <div className="p-4 bg-[#EFF8F2] border-2 border-[#D6E8DF] text-[#1F6F5F] rounded-lg text-xs font-bold flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" />
           <span>{t('save')} ✓</span>
         </div>
       )}
 
       {/* Profile Card */}
-      <div className="bg-white p-6 sm:p-10 rounded-[32px] border border-[#3F7655]/20 shadow-md space-y-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#3F7655]/10 pb-6">
+      <div className="bg-[#F5FBF7] p-6 sm:p-10 rounded-lg border-2 border-[#D6E8DF] space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#D6E8DF] pb-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-[#F2C94C] text-[#244936] flex items-center justify-center font-black text-2xl shadow-sm">
+            <div className="w-16 h-16 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center font-bold text-2xl">
               {getInitials()}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-xl font-black text-[#203128]">{profile.companyName || profile.contactPerson || 'Recycler Facility'}</h2>
-                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
+                <h2 className="text-xl font-bold text-[#222222]">{profile.companyName || profile.contactPerson || 'Recycler Facility'}</h2>
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded flex items-center gap-1 bg-[#EFF8F2] border-2 ${
                   profile.isVerified 
-                    ? 'text-emerald-800 bg-emerald-100' 
-                    : 'text-amber-800 bg-amber-100'
+                    ? 'text-[#1F6F5F] border-[#B8D9C8]' 
+                    : 'text-[#555555] border-[#D6E8DF]'
                 }`}>
-                  <ShieldCheck className="w-3 h-3" />
+                  <ShieldCheck className="w-3 h-3 text-[#1F6F5F]" />
                   {profile.isVerified ? t('recStatusVERIFIED') : 'Pending Verification'}
                 </span>
               </div>
-              <p className="text-xs text-[#718078] mt-0.5">
+              <p className="text-xs text-[#555555] mt-0.5">
                 Reg No: {profile.cpcbRegistrationNo ? profile.cpcbRegistrationNo : '—'}
               </p>
             </div>
@@ -145,9 +145,9 @@ export default function RecyclerProfile({ currentUser, onProfileUpdated }) {
 
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="px-4 py-2 bg-[#F8F5EA] hover:bg-[#DDEBD8] text-[#244936] border border-[#3F7655]/20 rounded-xl font-bold text-xs transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
+            className="px-4 py-2 bg-white hover:border-[#B8D9C8] text-[#222222] border-2 border-[#D6E8DF] rounded-lg font-bold text-xs transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
           >
-            <Edit3 className="w-3.5 h-3.5" />
+            <Edit3 className="w-3.5 h-3.5 text-[#1F6F5F]" />
             <span>{isEditing ? t('cancel') : t('editPrice')}</span>
           </button>
         </div>
@@ -155,65 +155,65 @@ export default function RecyclerProfile({ currentUser, onProfileUpdated }) {
         <form onSubmit={handleSave} className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">{t('accountType')}</label>
+              <label className="text-xs font-bold text-[#222222] block mb-1">{t('accountType')}</label>
               <input
                 type="text"
                 disabled={!isEditing}
                 value={profile.companyName}
                 onChange={(e) => setProfile({ ...profile, companyName: e.target.value })}
                 placeholder="Facility / Company Name"
-                className="w-full bg-[#F8F5EA] disabled:opacity-80 border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white disabled:opacity-80 border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">{t('cpcbTnpcbReg')}</label>
+              <label className="text-xs font-bold text-[#222222] block mb-1">{t('cpcbTnpcbReg')}</label>
               <input
                 type="text"
                 disabled={!isEditing}
                 value={profile.cpcbRegistrationNo}
                 onChange={(e) => setProfile({ ...profile, cpcbRegistrationNo: e.target.value })}
                 placeholder="CPCB / TNPCB Reg Number"
-                className="w-full bg-[#F8F5EA] disabled:opacity-80 border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white disabled:opacity-80 border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">{t('fullName')}</label>
+              <label className="text-xs font-bold text-[#222222] block mb-1">{t('fullName')}</label>
               <input
                 type="text"
                 disabled={!isEditing}
                 value={profile.contactPerson}
                 onChange={(e) => setProfile({ ...profile, contactPerson: e.target.value })}
                 placeholder="Contact Person Full Name"
-                className="w-full bg-[#F8F5EA] disabled:opacity-80 border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white disabled:opacity-80 border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="text-xs font-extrabold text-[#203128] block mb-1">{t('phoneNumber')}</label>
+              <label className="text-xs font-bold text-[#222222] block mb-1">{t('phoneNumber')}</label>
               <input
                 type="text"
                 disabled={!isEditing}
                 value={profile.phone}
                 onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
                 placeholder="Phone Number"
-                className="w-full bg-[#F8F5EA] disabled:opacity-80 border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+                className="w-full bg-white disabled:opacity-80 border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="text-xs font-extrabold text-[#203128] block mb-1">{t('storageLocationHub')}</label>
+            <label className="text-xs font-bold text-[#222222] block mb-1">{t('storageLocationHub')}</label>
             <input
               type="text"
               disabled={!isEditing}
               value={profile.location}
               onChange={(e) => setProfile({ ...profile, location: e.target.value })}
               placeholder="Facility Address / Location"
-              className="w-full bg-[#F8F5EA] disabled:opacity-80 border border-[#3F7655]/20 rounded-2xl px-4 py-3 text-xs font-semibold text-[#203128] focus:bg-white focus:outline-none"
+              className="w-full bg-white disabled:opacity-80 border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
             />
           </div>
 
@@ -221,7 +221,7 @@ export default function RecyclerProfile({ currentUser, onProfileUpdated }) {
             <button
               type="submit"
               disabled={isSaving}
-              className="w-full sm:w-auto px-8 py-3.5 bg-[#3F7655] hover:bg-[#244936] text-white rounded-2xl font-black text-xs shadow transition cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full sm:w-auto px-8 py-3 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition cursor-pointer flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               <span>{isSaving ? 'Saving...' : t('save')}</span>

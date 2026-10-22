@@ -582,7 +582,7 @@ export const recyclingCategories = structuredEWasteCategories.map(c => ({
   id: c.id,
   name: c.name,
   icon: c.icon,
-  color: "bg-emerald-100/70 text-emerald-900 border-emerald-200",
+  color: "bg-white text-[#1F6F5F] border-[#EEEEEE]",
   description: c.description,
   status: "Formal Recovery Only ⚡",
   referenceRate: `₹${c.benchmarkPrice}/kg`,

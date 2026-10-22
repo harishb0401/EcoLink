@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, X, ArrowRight, User, Bell, 
   CheckCircle2, LogOut, Settings, ShieldCheck, 
-  ChevronDown, Sparkles
+  ChevronDown
 } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import OfflineIndicator from '../OfflineIndicator';
@@ -58,33 +58,26 @@ export default function Navbar({
   // Determine user display info
   const isCollector = isLoggedIn && currentRole === 'collector';
   const isRecycler = isLoggedIn && currentRole === 'recycler';
-  const isAdmin = isLoggedIn && currentRole === 'admin';
 
   const rawName = userProfile?.fullName || userProfile?.name || userProfile?.facilityName || userProfile?.facility_name || userProfile?.organizationName || userProfile?.email;
   const displayName = rawName || (isCollector ? t("collectorRole") : 
-       isRecycler ? t("recyclerRole") : 
-       isAdmin ? t("platformAdministrator") : t("guestRole"));
+       isRecycler ? t("recyclerRole") : t("guestRole"));
 
   const displayRoleTitle = isCollector ? t("collectorRole") : 
-    isRecycler ? t("recyclerRole") : 
-    isAdmin ? t("adminRole") : t("publicRole");
+    isRecycler ? t("recyclerRole") : t("publicRole");
 
-  const profilePath = isCollector ? '/collector/profile' : isRecycler ? '/recycler/profile' : '/admin/profile';
-  const notifPath = isCollector ? '/collector/notifications' : isRecycler ? '/recycler/notifications' : '/admin/notifications';
+  const profilePath = isCollector ? '/collector/profile' : '/recycler/profile';
+  const notifPath = isCollector ? '/collector/notifications' : '/recycler/notifications';
 
   // Notifications Mock Data based on role
   const notifications = isCollector ? [
     { id: 1, title: "Offer Received: ₹670/kg", desc: "GreenCycle submitted an offer on LOT-00125", time: "5m ago", unread: true },
     { id: 2, title: "Phone Verified ✓", desc: "Your mobile number +91 98401 23456 is verified", time: "1h ago", unread: false },
     { id: 3, title: "Handover Scheduled", desc: "Pickup driver assigned for LOT-00124", time: "Yesterday", unread: false }
-  ] : isRecycler ? [
+  ] : [
     { id: 1, title: "New Matching Lot", desc: "30 kg Copper wiring available in Guindy", time: "12m ago", unread: true },
     { id: 2, title: "Offer Accepted", desc: "Collector accepted your bid of ₹670/kg", time: "2h ago", unread: true },
     { id: 3, title: "CPCB Audit Verified", desc: "EPR Compliance status: Active & Certified", time: "3d ago", unread: false }
-  ] : [
-    { id: 1, title: "1 Flagged Offer", desc: "Below benchmark bid requires review on LOT-00127", time: "15m ago", unread: true },
-    { id: 2, title: "New Recycler Registered", desc: "Salem Electro-Smelt applied for verification", time: "1h ago", unread: true },
-    { id: 3, title: "Benchmark Rates Updated", desc: "Lithium & PCB baseline updated for TN zone", time: "Yesterday", unread: false }
   ];
 
   const unreadCount = notifications.filter(n => n.unread).length;
@@ -94,10 +87,10 @@ export default function Navbar({
       ? location.pathname === path 
       : (location.pathname === path || (path !== '/' && location.pathname.startsWith(path)));
     
-    return `px-3.5 py-2 text-xs font-bold rounded-full transition-all duration-200 cursor-pointer ${
+    return `px-3.5 py-1.5 text-xs font-bold rounded-lg transition-colors duration-150 cursor-pointer ${
       isActive 
-        ? 'bg-[#3F7655] text-white shadow-sm' 
-        : 'text-[#203128] hover:text-[#3F7655] hover:bg-[#DDEBD8]/60'
+        ? 'bg-[#1F6F5F] text-white' 
+        : 'text-[#555555] hover:text-[#1F6F5F]'
     }`;
   };
 
@@ -106,28 +99,30 @@ export default function Navbar({
       ? location.pathname === path 
       : (location.pathname === path || (path !== '/' && location.pathname.startsWith(path)));
     
-    return `text-left px-3.5 py-2.5 rounded-xl text-sm font-bold transition ${
-      isActive ? 'bg-[#3F7655] text-white' : 'text-[#203128] hover:bg-[#DDEBD8]'
+    return `text-left px-3.5 py-2 rounded-lg text-sm font-bold transition-colors ${
+      isActive ? 'bg-[#1F6F5F] text-white' : 'text-[#555555] hover:text-[#1F6F5F]'
     }`;
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#F8F5EA]/95 backdrop-blur-md border-b border-[#3F7655]/15 shadow-sm transition-all">
+    <header className="sticky top-0 z-40 bg-white border-b-2 border-[#D6E8DF] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           
-          {/* Logo: ♻ Eco-Link */}
+          {/* Logo: Eco-Link */}
           <Link 
-            to={isLoggedIn ? (isCollector ? '/collector/dashboard' : isRecycler ? '/recycler/dashboard' : '/admin/dashboard') : '/'} 
+            to={isLoggedIn ? (isCollector ? '/collector/dashboard' : '/recycler/dashboard') : '/'} 
             className="flex items-center gap-2.5 cursor-pointer group shrink-0"
           >
-            <img 
-              src="/ecolink-logo.png" 
-              alt="EcoLink" 
-              className="w-10 h-10 object-contain rounded-2xl shadow-sm group-hover:scale-105 transition-transform bg-white p-1 border border-[#3F7655]/20" 
-            />
-            <span className="text-2xl font-extrabold tracking-tight text-[#244936]">
-              Eco-<span className="text-[#3F7655]">Link</span>
+            <div className="w-8 h-8 rounded-lg bg-[#F5FBF7] border-2 border-[#D6E8DF] flex items-center justify-center p-1">
+              <img 
+                src="/ecolink-logo.png" 
+                alt="EcoLink" 
+                className="w-full h-full object-contain" 
+              />
+            </div>
+            <span className="text-xl font-bold tracking-tight text-[#222222]">
+              Eco-<span className="text-[#1F6F5F]">Link</span>
             </span>
           </Link>
 
@@ -135,18 +130,12 @@ export default function Navbar({
           {/* 1. PUBLIC (UNAUTHENTICATED) DESKTOP NAVIGATION            */}
           {/* ========================================================= */}
           {!isLoggedIn && (
-            <nav className="hidden lg:flex items-center gap-1 bg-[#DDEBD8]/40 p-1.5 rounded-full border border-[#3F7655]/10">
+            <nav className="hidden lg:flex items-center gap-1 bg-[#F5FBF7] p-1 rounded-lg border-2 border-[#D6E8DF]">
               <Link to="/" className={getNavLinkClass('/', true)}>
                 {t("navHome")}
               </Link>
               <Link to="/how-it-works" className={getNavLinkClass('/how-it-works')}>
                 {t("navHowItWorks")}
-              </Link>
-              <Link to="/recycle-guide" className={getNavLinkClass('/recycle-guide')}>
-                {t("navGuide")}
-              </Link>
-              <Link to="/locations" className={getNavLinkClass('/locations')}>
-                {t("navLocations")}
               </Link>
               <Link to="/about" className={getNavLinkClass('/about')}>
                 {t("navAbout")}
@@ -158,7 +147,7 @@ export default function Navbar({
           {/* 2. COLLECTOR LOGGED-IN DESKTOP NAVIGATION                 */}
           {/* ========================================================= */}
           {isCollector && (
-            <nav className="hidden lg:flex items-center gap-1 bg-[#DDEBD8]/40 p-1.5 rounded-full border border-[#3F7655]/10">
+            <nav className="hidden lg:flex items-center gap-1 bg-[#F5FBF7] p-1 rounded-lg border-2 border-[#D6E8DF]">
               <Link to="/collector/dashboard" className={getNavLinkClass('/collector/dashboard', true)}>
                 {t("navDashboard")}
               </Link>
@@ -178,7 +167,7 @@ export default function Navbar({
           {/* 3. RECYCLER LOGGED-IN DESKTOP NAVIGATION                  */}
           {/* ========================================================= */}
           {isRecycler && (
-            <nav className="hidden lg:flex items-center gap-1 bg-[#DDEBD8]/40 p-1.5 rounded-full border border-[#3F7655]/10">
+            <nav className="hidden lg:flex items-center gap-1 bg-[#F5FBF7] p-1 rounded-lg border-2 border-[#D6E8DF]">
               <Link to="/recycler/dashboard" className={getNavLinkClass('/recycler/dashboard', true)}>
                 {t("navDashboard")}
               </Link>
@@ -194,55 +183,28 @@ export default function Navbar({
             </nav>
           )}
 
-
-          {/* ========================================================= */}
-          {/* 4. ADMIN LOGGED-IN DESKTOP NAVIGATION                     */}
-          {/* ========================================================= */}
-          {isAdmin && (
-            <nav className="hidden lg:flex items-center gap-1 bg-[#DDEBD8]/40 p-1.5 rounded-full border border-[#3F7655]/10">
-              <Link to="/admin/dashboard" className={getNavLinkClass('/admin/dashboard', true)}>
-                {t("navDashboard")}
-              </Link>
-              <Link to="/admin/collectors" className={getNavLinkClass('/admin/collectors')}>
-                {t("navCollectors")}
-              </Link>
-              <Link to="/admin/recyclers" className={getNavLinkClass('/admin/recyclers')}>
-                {t("navRecyclers")}
-              </Link>
-              <Link to="/admin/waste-lots" className={getNavLinkClass('/admin/waste-lots')}>
-                {t("navWasteLots")}
-              </Link>
-              <Link to="/admin/transactions" className={getNavLinkClass('/admin/transactions')}>
-                {t("navTransactions")}
-              </Link>
-              <Link to="/admin/verification" className={getNavLinkClass('/admin/verification')}>
-                {t("navVerification")}
-              </Link>
-            </nav>
-          )}
-
           {/* ========================================================= */}
           {/* RIGHT SIDE TOOLS: PUBLIC VS LOGGED-IN                     */}
           {/* ========================================================= */}
           <div className="hidden sm:flex items-center gap-3">
-            {/* Language Switcher: EN | தமிழ் (Always available) */}
-            <div className="flex items-center bg-white border border-[#3F7655]/20 rounded-full p-1 shadow-sm">
+            {/* Language Switcher: EN | தமிழ் */}
+            <div className="flex items-center bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg p-0.5">
               <button
                 onClick={() => setLang('en')}
-                className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition cursor-pointer ${
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
                   lang === 'en' 
-                    ? 'bg-[#3F7655] text-white' 
-                    : 'text-[#203128] hover:text-[#3F7655]'
+                    ? 'bg-[#1F6F5F] text-white' 
+                    : 'text-[#555555] hover:text-[#222222]'
                 }`}
               >
                 EN
               </button>
               <button
                 onClick={() => setLang('ta')}
-                className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition cursor-pointer ${
+                className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition cursor-pointer ${
                   lang === 'ta' 
-                    ? 'bg-[#3F7655] text-white' 
-                    : 'text-[#203128] hover:text-[#3F7655]'
+                    ? 'bg-[#1F6F5F] text-white' 
+                    : 'text-[#555555] hover:text-[#222222]'
                 }`}
               >
                 தமிழ்
@@ -252,30 +214,21 @@ export default function Navbar({
             {/* Online / Offline Status Indicator */}
             <OfflineIndicator currentRole={currentRole} />
 
-            {/* ===================================================== */}
-            {/* STATE 1: PUBLIC RIGHT SIDE -> SINGLE [ Login / Signup ] */}
-            {/* ===================================================== */}
+            {/* STATE 1: PUBLIC RIGHT SIDE -> [ Login / Signup ] */}
             {!isLoggedIn && (
               <div className="flex items-center">
                 <Link
                   to="/login"
-                  className={`px-5 py-2 text-xs font-extrabold rounded-full transition cursor-pointer shadow-sm ${
-                    location.pathname === '/login' || location.pathname === '/signup'
-                      ? 'bg-[#244936] text-white shadow-md'
-                      : 'bg-[#3F7655] text-white hover:bg-[#244936]'
-                  }`}
+                  className="px-4 py-2 text-xs font-bold rounded-lg transition cursor-pointer bg-[#1F6F5F] hover:bg-[#2FA084] text-white"
                 >
                   {t("loginSignupBtn")}
                 </Link>
               </div>
             )}
 
-            {/* ===================================================== */}
-            {/* STATE 2, 3, 4: LOGGED IN -> [ 🔔 Notifications ] [ 👤 Profile ] */}
-            {/* Login and Sign Up DISAPPEAR completely */}
-            {/* ===================================================== */}
+            {/* STATE 2: LOGGED IN -> [ 🔔 Notifications ] [ 👤 Profile ] */}
             {isLoggedIn && (
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-2">
                 
                 {/* 🔔 Notifications Button & Dropdown */}
                 <div className="relative" ref={notifRef}>
@@ -285,41 +238,41 @@ export default function Navbar({
                       setProfileDropdownOpen(false);
                     }}
                     title={t("notifications")}
-                    className="p-2.5 rounded-full text-[#203128] bg-white hover:bg-[#DDEBD8]/60 border border-[#3F7655]/20 relative transition cursor-pointer shadow-sm"
+                    className="p-2 rounded-lg text-[#555555] hover:text-[#1F6F5F] bg-[#F5FBF7] border-2 border-[#D6E8DF] relative transition cursor-pointer"
                   >
-                    <Bell className="w-4 h-4 text-[#3F7655]" />
+                    <Bell className="w-4 h-4 text-[#1F6F5F]" />
                     {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white"></span>
+                      <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#2FA084] rounded-full"></span>
                     )}
                   </button>
 
                   {notifDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white rounded-2xl border border-[#3F7655]/20 shadow-xl py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-                      <div className="px-4 pb-2 border-b border-[#3F7655]/10 flex items-center justify-between">
-                        <span className="text-xs font-black text-[#203128]">{t("notifications")}</span>
-                        <Link to={notifPath} className="text-[10px] font-bold text-[#3F7655] hover:underline">
+                    <div className="absolute right-0 mt-2 w-80 bg-[#F5FBF7] rounded-lg border-2 border-[#D6E8DF] py-3 z-50">
+                      <div className="px-4 pb-2 border-b-2 border-[#D6E8DF] flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#222222]">{t("notifications")}</span>
+                        <Link to={notifPath} className="text-[10px] font-bold text-[#1F6F5F] hover:underline">
                           {t("viewAll")}
                         </Link>
                       </div>
 
-                      <div className="divide-y divide-[#3F7655]/10 max-h-64 overflow-y-auto">
+                      <div className="divide-y-2 divide-[#D6E8DF] max-h-64 overflow-y-auto">
                         {notifications.map(n => (
                           <div 
                             key={n.id} 
                             onClick={() => navigate(notifPath)}
-                            className={`p-3 text-xs hover:bg-[#FAF8F2] transition cursor-pointer ${n.unread ? 'bg-[#DDEBD8]/20' : ''}`}
+                            className="p-3 text-xs hover:bg-[#EFF8F2] transition cursor-pointer"
                           >
                             <div className="flex items-center justify-between">
-                              <span className="font-extrabold text-[#203128]">{t(n.title)}</span>
-                              <span className="text-[10px] text-slate-400">{n.time}</span>
+                              <span className="font-bold text-[#222222]">{t(n.title)}</span>
+                              <span className="text-[10px] text-[#555555]">{n.time}</span>
                             </div>
-                            <p className="text-[11px] text-[#718078] mt-0.5">{t(n.desc)}</p>
+                            <p className="text-[11px] text-[#555555] mt-0.5">{t(n.desc)}</p>
                           </div>
                         ))}
                       </div>
 
-                      <div className="pt-2 px-3 border-t border-[#3F7655]/10 text-center">
-                        <Link to={notifPath} className="text-[11px] font-bold text-[#3F7655] hover:underline">
+                      <div className="pt-2 px-3 border-t-2 border-[#D6E8DF] text-center">
+                        <Link to={notifPath} className="text-[11px] font-bold text-[#1F6F5F] hover:underline">
                           {t("openNotificationsCenter")} →
                         </Link>
                       </div>
@@ -334,39 +287,39 @@ export default function Navbar({
                       setProfileDropdownOpen(!profileDropdownOpen);
                       setNotifDropdownOpen(false);
                     }}
-                    className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-full bg-white hover:bg-[#DDEBD8]/50 border border-[#3F7655]/20 transition cursor-pointer shadow-sm"
+                    className="flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-lg bg-[#F5FBF7] border-2 border-[#D6E8DF] hover:border-[#B8D9C8] transition cursor-pointer"
                   >
-                    <div className="w-7 h-7 rounded-full bg-[#3F7655] text-white flex items-center justify-center font-bold text-xs shadow-inner">
+                    <div className="w-6 h-6 rounded bg-[#1F6F5F] text-white flex items-center justify-center font-bold text-xs">
                       {displayName.charAt(0)}
                     </div>
                     <div className="text-left hidden md:block">
-                      <span className="text-xs font-extrabold text-[#203128] block truncate max-w-[110px] leading-tight">
+                      <span className="text-xs font-bold text-[#222222] block truncate max-w-[110px] leading-tight">
                         {displayName.split(' ')[0]}
                       </span>
-                      <span className="text-[10px] font-bold text-[#718078] block leading-none">
+                      <span className="text-[10px] font-medium text-[#555555] block leading-none">
                         {displayRoleTitle}
                       </span>
                     </div>
-                    <ChevronDown className="w-3.5 h-3.5 text-[#718078]" />
+                    <ChevronDown className="w-3.5 h-3.5 text-[#555555]" />
                   </button>
 
                   {profileDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-[#3F7655]/20 shadow-xl py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="absolute right-0 mt-2 w-64 bg-[#F5FBF7] rounded-lg border-2 border-[#D6E8DF] py-3 z-50">
                       {/* Dropdown Header */}
-                      <div className="px-4 pb-3 border-b border-[#3F7655]/10">
-                        <h4 className="text-sm font-black text-[#203128] truncate">{displayName}</h4>
-                        <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full inline-block mt-1">
+                      <div className="px-4 pb-3 border-b-2 border-[#D6E8DF]">
+                        <h4 className="text-sm font-bold text-[#222222] truncate">{displayName}</h4>
+                        <span className="text-[11px] font-medium text-[#1F6F5F] border-2 border-[#D6E8DF] bg-white px-2 py-0.5 rounded inline-block mt-1">
                           {displayRoleTitle}
                         </span>
                       </div>
 
                       {/* Dropdown Links */}
-                      <div className="py-2 text-xs font-bold text-[#203128]">
+                      <div className="py-2 text-xs font-medium text-[#222222]">
                         <Link
                           to={profilePath}
-                          className="w-full text-left px-4 py-2 hover:bg-[#DDEBD8]/40 transition flex items-center gap-2.5 cursor-pointer"
+                          className="w-full text-left px-4 py-2 hover:text-[#1F6F5F] transition flex items-center gap-2.5 cursor-pointer"
                         >
-                          <User className="w-4 h-4 text-[#3F7655]" />
+                          <User className="w-4 h-4 text-[#1F6F5F]" />
                           <span>{t("profile")}</span>
                         </Link>
                         
@@ -375,20 +328,20 @@ export default function Navbar({
                             setProfileDropdownOpen(false);
                             alert("Account preferences & notification settings saved.");
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-[#DDEBD8]/40 transition flex items-center gap-2.5 cursor-pointer"
+                          className="w-full text-left px-4 py-2 hover:text-[#1F6F5F] transition flex items-center gap-2.5 cursor-pointer"
                         >
-                          <Settings className="w-4 h-4 text-[#718078]" />
+                          <Settings className="w-4 h-4 text-[#555555]" />
                           <span>{t("settings")}</span>
                         </button>
                       </div>
 
                       {/* Divider & Logout */}
-                      <div className="pt-2 border-t border-[#3F7655]/10 px-2">
+                      <div className="pt-2 border-t-2 border-[#D6E8DF] px-2">
                         <button
                           onClick={handleLogoutClick}
-                          className="w-full text-left px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl transition flex items-center gap-2.5 cursor-pointer"
+                          className="w-full text-left px-3 py-2 text-xs font-medium text-[#555555] hover:text-[#222222] rounded-lg transition flex items-center gap-2.5 cursor-pointer"
                         >
-                          <LogOut className="w-4 h-4 text-rose-600" />
+                          <LogOut className="w-4 h-4" />
                           <span>{t("logout")}</span>
                         </button>
                       </div>
@@ -405,7 +358,7 @@ export default function Navbar({
           <div className="flex items-center lg:hidden">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 rounded-2xl text-[#203128] hover:bg-[#DDEBD8]/60 focus:outline-none"
+              className="p-2 rounded-lg text-[#222222] hover:text-[#1F6F5F] focus:outline-none"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -414,24 +367,22 @@ export default function Navbar({
         </div>
       </div>
 
-      {/* ========================================================= */}
-      {/* MOBILE RESPONSIVE DRAWER                                  */}
-      {/* ========================================================= */}
+      {/* MOBILE RESPONSIVE DRAWER */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-b border-[#3F7655]/15 bg-[#F8F5EA] px-4 pt-3 pb-6 space-y-3 animate-in slide-in-from-top duration-200">
+        <div className="lg:hidden border-b-2 border-[#D6E8DF] bg-[#F5FBF7] px-4 pt-3 pb-6 space-y-3">
           
           {/* Language & Connectivity in Mobile Drawer */}
-          <div className="flex items-center justify-between pb-2 border-b border-[#3F7655]/10">
-            <div className="flex items-center bg-white border border-[#3F7655]/20 rounded-full p-1">
+          <div className="flex items-center justify-between pb-2 border-b-2 border-[#D6E8DF]">
+            <div className="flex items-center bg-white border-2 border-[#D6E8DF] rounded-lg p-0.5">
               <button
                 onClick={() => setLang('en')}
-                className={`px-3 py-1 text-xs font-bold rounded-full ${lang === 'en' ? 'bg-[#3F7655] text-white' : 'text-[#203128]'}`}
+                className={`px-3 py-1 text-xs font-bold rounded-md ${lang === 'en' ? 'bg-[#1F6F5F] text-white' : 'text-[#555555]'}`}
               >
                 EN
               </button>
               <button
                 onClick={() => setLang('ta')}
-                className={`px-3 py-1 text-xs font-bold rounded-full ${lang === 'ta' ? 'bg-[#3F7655] text-white' : 'text-[#203128]'}`}
+                className={`px-3 py-1 text-xs font-bold rounded-md ${lang === 'ta' ? 'bg-[#1F6F5F] text-white' : 'text-[#555555]'}`}
               >
                 தமிழ்
               </button>
@@ -441,7 +392,6 @@ export default function Navbar({
           </div>
 
           {/* 1. PUBLIC MOBILE NAV */}
-          {/* 1. PUBLIC MOBILE NAV */}
           {!isLoggedIn && (
             <div className="flex flex-col space-y-1">
               <Link to="/" className={getMobileNavLinkClass('/', true)}>
@@ -450,20 +400,14 @@ export default function Navbar({
               <Link to="/how-it-works" className={getMobileNavLinkClass('/how-it-works')}>
                 {t("navHowItWorks")}
               </Link>
-              <Link to="/recycle-guide" className={getMobileNavLinkClass('/recycle-guide')}>
-                {t("navGuide")}
-              </Link>
-              <Link to="/locations" className={getMobileNavLinkClass('/locations')}>
-                {t("navLocations")}
-              </Link>
               <Link to="/about" className={getMobileNavLinkClass('/about')}>
                 {t("navAbout")}
               </Link>
 
-              <div className="pt-3 border-t border-[#3F7655]/10">
+              <div className="pt-3 border-t-2 border-[#D6E8DF]">
                 <Link
                   to="/login"
-                  className="block w-full py-2.5 text-xs font-extrabold text-white bg-[#3F7655] hover:bg-[#244936] rounded-xl text-center shadow-sm"
+                  className="block w-full py-2.5 text-xs font-bold text-white bg-[#1F6F5F] hover:bg-[#2FA084] rounded-lg text-center"
                 >
                   {t("navLogin")} / {t("navSignUp")}
                 </Link>
@@ -474,12 +418,12 @@ export default function Navbar({
           {/* 2. COLLECTOR LOGGED IN MOBILE NAV */}
           {isCollector && (
             <div className="flex flex-col space-y-1">
-              <div className="p-3 bg-white rounded-xl border border-[#3F7655]/15 mb-2 flex items-center justify-between">
+              <div className="p-3 bg-white rounded-lg border-2 border-[#D6E8DF] mb-2 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-black text-[#203128] block">{displayName}</span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full inline-block mt-0.5">{t("collectorRole")}</span>
+                  <span className="text-xs font-bold text-[#222222] block">{displayName}</span>
+                  <span className="text-[10px] font-bold text-[#1F6F5F] border-2 border-[#D6E8DF] px-2 py-0.5 rounded inline-block mt-0.5">{t("collectorRole")}</span>
                 </div>
-                <Link to="/collector/profile" className="text-xs font-bold text-[#3F7655] underline">{t("navProfile")}</Link>
+                <Link to="/collector/profile" className="text-xs font-bold text-[#1F6F5F] underline">{t("navProfile")}</Link>
               </div>
 
               <Link to="/collector/dashboard" className={getMobileNavLinkClass('/collector/dashboard', true)}>
@@ -498,12 +442,12 @@ export default function Navbar({
                 {t("navNotifications")} ({unreadCount})
               </Link>
 
-              <div className="pt-2 border-t border-[#3F7655]/10">
+              <div className="pt-2 border-t-2 border-[#D6E8DF]">
                 <button
                   onClick={handleLogoutClick}
-                  className="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-extrabold text-rose-700 bg-rose-50 flex items-center gap-2 cursor-pointer"
+                  className="w-full text-left px-3.5 py-2 text-sm font-bold text-[#555555] hover:text-[#222222] rounded-lg flex items-center gap-2 cursor-pointer"
                 >
-                  <LogOut className="w-4 h-4 text-rose-600" />
+                  <LogOut className="w-4 h-4" />
                   <span>{t("navLogout")}</span>
                 </button>
               </div>
@@ -513,12 +457,12 @@ export default function Navbar({
           {/* 3. RECYCLER LOGGED IN MOBILE NAV */}
           {isRecycler && (
             <div className="flex flex-col space-y-1">
-              <div className="p-3 bg-white rounded-xl border border-[#3F7655]/15 mb-2 flex items-center justify-between">
+              <div className="p-3 bg-white rounded-lg border-2 border-[#D6E8DF] mb-2 flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-black text-[#203128] block">{displayName}</span>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full inline-block mt-0.5">{t("recyclerRole")}</span>
+                  <span className="text-xs font-bold text-[#222222] block">{displayName}</span>
+                  <span className="text-[10px] font-bold text-[#1F6F5F] border-2 border-[#D6E8DF] px-2 py-0.5 rounded inline-block mt-0.5">{t("recyclerRole")}</span>
                 </div>
-                <Link to="/recycler/profile" className="text-xs font-bold text-[#3F7655] underline">{t("navProfile")}</Link>
+                <Link to="/recycler/profile" className="text-xs font-bold text-[#1F6F5F] underline">{t("navProfile")}</Link>
               </div>
 
               <Link to="/recycler/dashboard" className={getMobileNavLinkClass('/recycler/dashboard', true)}>
@@ -537,58 +481,12 @@ export default function Navbar({
                 {t("navNotifications")} ({unreadCount})
               </Link>
 
-
-              <div className="pt-2 border-t border-[#3F7655]/10">
+              <div className="pt-2 border-t-2 border-[#D6E8DF]">
                 <button
                   onClick={handleLogoutClick}
-                  className="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-extrabold text-rose-700 bg-rose-50 flex items-center gap-2 cursor-pointer"
+                  className="w-full text-left px-3.5 py-2 text-sm font-bold text-[#555555] hover:text-[#222222] rounded-lg flex items-center gap-2 cursor-pointer"
                 >
-                  <LogOut className="w-4 h-4 text-rose-600" />
-                  <span>{t("navLogout")}</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* 4. ADMIN LOGGED IN MOBILE NAV */}
-          {isAdmin && (
-            <div className="flex flex-col space-y-1">
-              <div className="p-3 bg-white rounded-xl border border-[#3F7655]/15 mb-2 flex items-center justify-between">
-                <div>
-                  <span className="text-xs font-black text-[#203128] block">{displayName}</span>
-                  <span className="text-[10px] font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full inline-block mt-0.5">{t("adminRole")}</span>
-                </div>
-                <Link to="/admin/profile" className="text-xs font-bold text-[#3F7655] underline">{t("navProfile")}</Link>
-              </div>
-
-              <Link to="/admin/dashboard" className={getMobileNavLinkClass('/admin/dashboard', true)}>
-                {t("navDashboard")}
-              </Link>
-              <Link to="/admin/collectors" className={getMobileNavLinkClass('/admin/collectors')}>
-                {t("navCollectors")}
-              </Link>
-              <Link to="/admin/recyclers" className={getMobileNavLinkClass('/admin/recyclers')}>
-                {t("navRecyclers")}
-              </Link>
-              <Link to="/admin/waste-lots" className={getMobileNavLinkClass('/admin/waste-lots')}>
-                {t("navWasteLots")}
-              </Link>
-              <Link to="/admin/transactions" className={getMobileNavLinkClass('/admin/transactions')}>
-                {t("navTransactions")}
-              </Link>
-              <Link to="/admin/verification" className={getMobileNavLinkClass('/admin/verification')}>
-                {t("navVerification")}
-              </Link>
-              <Link to="/admin/notifications" className={getMobileNavLinkClass('/admin/notifications')}>
-                {t("navNotifications")} ({unreadCount})
-              </Link>
-
-              <div className="pt-2 border-t border-[#3F7655]/10">
-                <button
-                  onClick={handleLogoutClick}
-                  className="w-full text-left px-3.5 py-2.5 rounded-xl text-sm font-extrabold text-rose-700 bg-rose-50 flex items-center gap-2 cursor-pointer"
-                >
-                  <LogOut className="w-4 h-4 text-rose-600" />
+                  <LogOut className="w-4 h-4" />
                   <span>{t("navLogout")}</span>
                 </button>
               </div>

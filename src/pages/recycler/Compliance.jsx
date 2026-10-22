@@ -21,29 +21,29 @@ export default function Compliance({ recyclerProfile }) {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 max-w-5xl mx-auto bg-white text-[#222222]">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-[#203128]">{t('navCompliance')}</h1>
-        <p className="text-xs sm:text-sm text-[#718078]">
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#222222]">{t('navCompliance')}</h1>
+        <p className="text-xs sm:text-sm text-[#555555]">
           {t('cpcbVerifLayerSub')}
         </p>
       </div>
 
       {/* Compliance Overview Card */}
-      <div className="bg-white p-6 sm:p-10 rounded-[32px] border border-[#3F7655]/20 shadow-lg space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#3F7655]/10 pb-6">
+      <div className="bg-[#F5FBF7] p-6 sm:p-10 rounded-lg border-2 border-[#D6E8DF] space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#D6E8DF] pb-6">
           <div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#3F7655] bg-[#DDEBD8] px-3 py-1 rounded-full">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-3 py-1 rounded">
               {t('cpcbVerified')}
             </span>
-            <h2 className="text-2xl font-black text-[#203128] mt-2">Registration #{complianceData.cpcbRegistrationNo}</h2>
-            <p className="text-xs text-[#718078]">Valid Until: {complianceData.validTill} • Annual EPR Quota: 50,000 kg</p>
+            <h2 className="text-2xl font-bold text-[#222222] mt-3">Registration #{complianceData.cpcbRegistrationNo}</h2>
+            <p className="text-xs text-[#555555]">Valid Until: {complianceData.validTill} • Annual EPR Quota: 50,000 kg</p>
           </div>
 
           <button
             onClick={() => alert("Downloading Official CPCB Certificate PDF...")}
-            className="px-5 py-3 bg-[#3F7655] hover:bg-[#244936] text-white rounded-2xl font-black text-xs shadow transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+            className="px-5 py-3 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
           >
             <Download className="w-4 h-4" />
             <span>{t('digitalReceipt')} PDF</span>
@@ -52,42 +52,42 @@ export default function Compliance({ recyclerProfile }) {
 
         {/* 4 Compliance Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
-          <div className="p-4 bg-[#F8F5EA] rounded-2xl border border-[#3F7655]/10">
-            <span className="text-[10px] font-extrabold text-[#718078] uppercase block">{t('eprQuotaTarget')}</span>
-            <span className="text-base font-black text-[#203128]">50,000 kg</span>
+          <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF]">
+            <span className="text-[10px] font-bold text-[#555555] uppercase block">{t('eprQuotaTarget')}</span>
+            <span className="text-base font-bold text-[#222222]">50,000 kg</span>
           </div>
-          <div className="p-4 bg-[#F8F5EA] rounded-2xl border border-[#3F7655]/10">
-            <span className="text-[10px] font-extrabold text-[#718078] uppercase block">{t('totalMaterialRecycledKg')}</span>
-            <span className="text-base font-black text-[#3F7655]">{complianceData.achievedKg.toLocaleString()} kg (88.2%)</span>
+          <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF]">
+            <span className="text-[10px] font-bold text-[#555555] uppercase block">{t('totalMaterialRecycledKg')}</span>
+            <span className="text-base font-bold text-[#1F6F5F]">{complianceData.achievedKg.toLocaleString()} kg (88.2%)</span>
           </div>
-          <div className="p-4 bg-[#F8F5EA] rounded-2xl border border-[#3F7655]/10">
-            <span className="text-[10px] font-extrabold text-[#718078] uppercase block">{t('recoveryEfficiencyLabel')}</span>
-            <span className="text-base font-black text-[#244936]">{complianceData.recoveryRatioPercent}%</span>
+          <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF]">
+            <span className="text-[10px] font-bold text-[#555555] uppercase block">{t('recoveryEfficiencyLabel')}</span>
+            <span className="text-base font-bold text-[#222222]">{complianceData.recoveryRatioPercent}%</span>
           </div>
-          <div className="p-4 bg-[#F8F5EA] rounded-2xl border border-[#3F7655]/10">
-            <span className="text-[10px] font-extrabold text-[#718078] uppercase block">{t('hazardLevel')}</span>
-            <span className="text-base font-black text-emerald-700">{complianceData.toxicDiversionKg.toLocaleString()} kg</span>
+          <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF]">
+            <span className="text-[10px] font-bold text-[#555555] uppercase block">{t('hazardLevel')}</span>
+            <span className="text-base font-bold text-[#1F6F5F]">{complianceData.toxicDiversionKg.toLocaleString()} kg</span>
           </div>
         </div>
 
         {/* Form-2 Manifest Generator */}
-        <div className="p-6 bg-[#FAF8F2] rounded-[24px] border border-[#3F7655]/20 space-y-3">
+        <div className="p-6 bg-[#EFF8F2] rounded-lg border-2 border-[#D6E8DF] space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-[#3F7655]" />
-              <h3 className="text-sm font-black text-[#203128]">{t('form2AutoReporting')}</h3>
+              <FileText className="w-5 h-5 text-[#1F6F5F]" />
+              <h3 className="text-sm font-bold text-[#222222]">{t('form2AutoReporting')}</h3>
             </div>
-            <span className="text-[10px] font-black text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full">
+            <span className="text-[10px] font-bold text-[#1F6F5F] bg-white border-2 border-[#B8D9C8] px-2.5 py-0.5 rounded">
               {t('automatedBadge')}
             </span>
           </div>
-          <p className="text-xs text-[#718078] leading-relaxed">
+          <p className="text-xs text-[#555555] leading-relaxed">
             {t('form2Description')}
           </p>
           <div className="pt-2 flex gap-3">
             <button
               onClick={() => alert("Form-2 Manifest quarterly compilation generated!")}
-              className="px-4 py-2 bg-white border border-[#3F7655]/20 text-[#244936] rounded-xl font-bold text-xs hover:bg-[#DDEBD8] transition cursor-pointer"
+              className="px-4 py-2 bg-white border-2 border-[#D6E8DF] text-[#222222] rounded-lg font-bold text-xs hover:border-[#B8D9C8] transition cursor-pointer"
             >
               {t('exportForm2Btn')}
             </button>

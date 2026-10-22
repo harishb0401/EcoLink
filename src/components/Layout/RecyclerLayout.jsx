@@ -9,8 +9,8 @@ export default function RecyclerLayout({ currentUser, onLogout, onOpenSearchModa
     return <Navigate to="/login" replace />;
   }
 
-  // 2. Role check -> Recycler or Admin only
-  if (currentUser.role !== 'recycler' && currentUser.role !== 'admin') {
+  // 2. Role check -> Recycler only
+  if (currentUser.role !== 'recycler') {
     if (currentUser.role === 'collector') {
       return <Navigate to="/collector/dashboard" replace />;
     }
@@ -18,7 +18,7 @@ export default function RecyclerLayout({ currentUser, onLogout, onOpenSearchModa
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8F5EA] text-[#203128] antialiased font-sans">
+    <div className="min-h-screen flex flex-col bg-[#FFFFFF] text-[#222222] antialiased font-sans">
       <Navbar 
         isLoggedIn={true} 
         currentRole="recycler" 

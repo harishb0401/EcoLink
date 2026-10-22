@@ -8,7 +8,6 @@ import authService from './services/authService';
 import wasteService from './services/wasteService';
 import offerService from './services/offerService';
 import transactionService from './services/transactionService';
-import adminService from './services/adminService';
 import { subscribeSyncStatus } from './services/offline/syncManager';
 
 // Reference / Default Data Fallbacks
@@ -109,15 +108,6 @@ export default function App() {
         setMaterialLots(availableLots || []);
         setOffers(myOffers || []);
         setTransactions(txs || []);
-      } else if (currentUser.role === 'admin') {
-        const [cols, recs, allTxs] = await Promise.all([
-          adminService.getCollectors().catch(() => mockCollectors),
-          adminService.getRecyclers().catch(() => mockRecyclers),
-          transactionService.getAllTransactions().catch(() => mockTransactions)
-        ]);
-        setCollectors(cols || []);
-        setRecyclers(recs || []);
-        setTransactions(allTxs || []);
       }
     } catch (err) {
       console.error('Failed to load application data from backend:', err);
@@ -226,10 +216,10 @@ export default function App() {
 
   if (isAuthChecking) {
     return (
-      <div className="min-h-screen bg-[#F8F5EA] flex items-center justify-center text-[#203128]">
+      <div className="min-h-screen bg-[#FFFFFF] flex items-center justify-center text-[#222222]">
         <div className="text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-[#3F7655] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs font-bold uppercase tracking-wider text-[#718078]">
+          <div className="w-8 h-8 border-2 border-[#1F6F5F] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-semibold tracking-wider text-[#555555]">
             Connecting to Eco-Link Secure Network...
           </p>
         </div>
@@ -239,7 +229,7 @@ export default function App() {
 
   return (
     <LanguageProvider>
-      <div className="min-h-screen bg-[#F8F5EA] text-[#203128] font-sans antialiased selection:bg-[#3F7655]/20 selection:text-[#203128]">
+      <div className="min-h-screen bg-[#FFFFFF] text-[#222222] font-sans antialiased selection:bg-[#1F6F5F] selection:text-white">
         <AppRoutes
           currentUser={currentUser}
           onLoginSuccess={handleLoginSuccess}

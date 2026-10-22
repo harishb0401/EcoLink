@@ -153,20 +153,20 @@ export default function AddWasteModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-y-auto animate-fadeIn">
-      <div className="bg-[#FAF8F2] rounded-[32px] max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-[#3F7655]/30 space-y-6 my-auto text-[#203128] max-h-[92vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/40 overflow-y-auto">
+      <div className="bg-[#F5FBF7] rounded-lg max-w-2xl w-full p-6 sm:p-8 border-2 border-[#D6E8DF] space-y-6 my-auto text-[#222222] max-h-[92vh] overflow-y-auto">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#3F7655]/15">
+        <div className="flex items-center justify-between pb-4 border-b-2 border-[#D6E8DF]">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#3F7655] text-white flex items-center justify-center font-black shadow-sm">
+            <div className="w-10 h-10 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center font-bold">
               <PlusCircle className="w-6 h-6" />
             </div>
             <div>
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#3F7655] bg-[#DDEBD8] px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2.5 py-0.5 rounded">
                 {t('collectorManifestWorkflowBadge', 'COLLECTOR MANIFEST WORKFLOW')}
               </span>
-              <h3 className="text-xl font-black text-[#244936] mt-0.5">
+              <h3 className="text-xl font-bold text-[#222222] mt-1">
                 {t("addEWaste")}
               </h3>
             </div>
@@ -174,7 +174,7 @@ export default function AddWasteModal({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-slate-200/70 text-slate-500 hover:text-slate-800 transition cursor-pointer"
+            className="p-2 rounded text-[#555555] hover:text-[#222222] transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -182,9 +182,9 @@ export default function AddWasteModal({
 
         {/* Collector Phone Verification Status Banner */}
         {collectorProfile && !collectorProfile.phone_verified && (
-          <div className="p-3.5 bg-amber-50 border border-amber-300 rounded-2xl flex items-center justify-between gap-3 text-amber-900 text-xs">
+          <div className="p-3.5 bg-[#EFF8F2] border-2 border-[#B8D9C8] rounded-lg flex items-center justify-between gap-3 text-[#222222] text-xs">
             <div className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+              <AlertCircle className="w-5 h-5 text-[#555555] shrink-0" />
               <span>{t("phoneVerificationRequired")} - You must verify before lot creation.</span>
             </div>
             <button
@@ -193,7 +193,7 @@ export default function AddWasteModal({
                 onClose();
                 if (onOpenPhoneVerification) onOpenPhoneVerification();
               }}
-              className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shrink-0 cursor-pointer"
+              className="px-3 py-1 bg-[#1F6F5F] hover:bg-[#2FA084] text-white font-bold rounded-lg text-xs shrink-0 cursor-pointer"
             >
               {t("verifyNow")}
             </button>
@@ -205,7 +205,7 @@ export default function AddWasteModal({
           {/* Step 1: Structured Waste Classification Selection */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-black text-[#203128] uppercase tracking-wider">
+              <label className="block text-xs font-bold text-[#222222] uppercase tracking-wider">
                 1. {t("category")} / {t("wasteCategory")}
               </label>
 
@@ -213,16 +213,16 @@ export default function AddWasteModal({
                 type="button"
                 onClick={handleAiClassify}
                 disabled={isAiScanning}
-                className="text-[11px] font-extrabold text-[#3F7655] bg-white border border-[#3F7655]/20 hover:bg-[#DDEBD8] px-2.5 py-1 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                className="text-[11px] font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] hover:border-[#B8D9C8] px-2.5 py-1 rounded-lg transition flex items-center gap-1.5 cursor-pointer"
               >
-                <Sparkles className={`w-3.5 h-3.5 ${isAiScanning ? 'animate-spin text-amber-500' : ''}`} />
+                <Sparkles className="w-3.5 h-3.5 text-[#1F6F5F]" />
                 <span>{isAiScanning ? 'Classifying...' : t("smartClassifyBtn")}</span>
               </button>
             </div>
 
             {aiDetectedMessage && (
-              <div className="p-2 bg-[#DDEBD8] rounded-xl text-xs font-bold text-[#244936] flex items-center gap-1.5 animate-fadeIn">
-                <CheckCircle2 className="w-4 h-4 text-[#3F7655]" />
+              <div className="p-2 bg-white border-2 border-[#B8D9C8] rounded-lg text-xs font-bold text-[#1F6F5F] flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#1F6F5F]" />
                 <span>{aiDetectedMessage}</span>
               </div>
             )}
@@ -236,17 +236,17 @@ export default function AddWasteModal({
                     key={cat.id}
                     type="button"
                     onClick={() => handleCategorySelect(cat.name)}
-                    className={`p-2.5 rounded-2xl border text-left transition flex flex-col justify-between cursor-pointer ${
+                    className={`p-2.5 rounded-lg border-2 text-left transition flex flex-col justify-between cursor-pointer ${
                       isSelected
-                        ? 'bg-[#3F7655] text-white border-[#244936] shadow-sm'
-                        : 'bg-white text-[#203128] border-[#3F7655]/15 hover:bg-[#DDEBD8]/40'
+                        ? 'bg-[#1F6F5F] text-white border-[#1F6F5F]'
+                        : 'bg-white text-[#222222] border-[#D6E8DF] hover:border-[#B8D9C8]'
                     }`}
                   >
                     <span className="text-xl mb-1">{cat.icon}</span>
-                    <span className="text-[11px] font-black leading-tight line-clamp-2">
+                    <span className="text-[11px] font-bold leading-tight line-clamp-2">
                       {tCategory(cat.name)}
                     </span>
-                    <span className={`text-[10px] font-extrabold mt-1 ${isSelected ? 'text-[#F2C94C]' : 'text-[#3F7655]'}`}>
+                    <span className={`text-[10px] font-bold mt-1 ${isSelected ? 'text-white' : 'text-[#1F6F5F]'}`}>
                       ₹{cat.benchmarkPrice}/kg
                     </span>
                   </button>
@@ -258,7 +258,7 @@ export default function AddWasteModal({
           {/* Step 2: Specific Material & Condition Details */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-extrabold text-[#203128] mb-1">
+              <label className="block text-xs font-bold text-[#222222] mb-1">
                 {t("materialCategory")} / Item Specifics
               </label>
               <input
@@ -266,19 +266,19 @@ export default function AddWasteModal({
                 value={material}
                 onChange={(e) => setMaterial(e.target.value)}
                 placeholder={t("addWastePlaceholderDescription")}
-                className="w-full text-xs font-bold bg-white border border-[#3F7655]/20 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#3F7655]"
+                className="w-full text-xs font-bold bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B8D9C8]"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-extrabold text-[#203128] mb-1">
+              <label className="block text-xs font-bold text-[#222222] mb-1">
                 {t("conditionLabel")}
               </label>
               <select
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
-                className="w-full text-xs font-bold bg-[#FAF8F2] border border-[#3F7655]/20 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#3F7655]"
+                className="w-full text-xs font-bold bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B8D9C8]"
               >
                 <option value="Non-working / Scrap">{tCondition("Non-working / Scrap")}</option>
                 <option value="Mixed Condition">{tCondition("Mixed Condition")}</option>
@@ -290,7 +290,7 @@ export default function AddWasteModal({
           {/* Step 3: Quantity & Unit */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-extrabold text-[#203128] mb-1">
+              <label className="block text-xs font-bold text-[#222222] mb-1">
                 {t("quantityLabel")} ({unit})
               </label>
               <input
@@ -299,19 +299,19 @@ export default function AddWasteModal({
                 step="0.5"
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className="w-full text-xs font-bold bg-white border border-[#3F7655]/20 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#3F7655]"
+                className="w-full text-xs font-bold bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B8D9C8]"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-extrabold text-[#203128] mb-1">
+              <label className="block text-xs font-bold text-[#222222] mb-1">
                 {t("unitLabel")}
               </label>
               <select
                 value={unit}
                 onChange={(e) => setUnit(e.target.value)}
-                className="w-full text-xs font-bold bg-[#FAF8F2] border border-[#3F7655]/20 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#3F7655]"
+                className="w-full text-xs font-bold bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B8D9C8]"
               >
                 <option value="kg">{t('unitKg', 'kg (Kilograms)')}</option>
                 <option value="units">{t('unitUnits', 'units (Items)')}</option>
@@ -323,13 +323,13 @@ export default function AddWasteModal({
           {/* Step 4: Location & Collection Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-extrabold text-[#203128] mb-1">
+              <label className="block text-xs font-bold text-[#222222] mb-1">
                 {t("locationLabel")}
               </label>
               <select
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full text-xs font-bold bg-[#FAF8F2] border border-[#3F7655]/20 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#3F7655]"
+                className="w-full text-xs font-bold bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B8D9C8]"
               >
                 {tamilNaduLocations.map((loc, i) => (
                   <option key={i} value={loc}>{loc}</option>
@@ -338,61 +338,61 @@ export default function AddWasteModal({
             </div>
 
             <div>
-              <label className="block text-xs font-extrabold text-[#203128] mb-1">
+              <label className="block text-xs font-bold text-[#222222] mb-1">
                 {t("collectionDateLabel")}
               </label>
               <input
                 type="date"
                 value={collectionDate}
                 onChange={(e) => setCollectionDate(e.target.value)}
-                className="w-full text-xs font-bold bg-white border border-[#3F7655]/20 rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#3F7655]"
+                className="w-full text-xs font-bold bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2.5 focus:outline-none focus:border-[#B8D9C8]"
                 required
               />
             </div>
           </div>
 
           {/* Step 5: Live Fair Price Calculation Preview Box */}
-          <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#3F7655]/20 shadow-sm space-y-3">
-            <div className="flex items-center justify-between border-b border-[#3F7655]/10 pb-2">
-              <div className="flex items-center gap-1.5 text-xs font-black text-[#244936]">
-                <Calculator className="w-4 h-4 text-[#3F7655]" />
+          <div className="bg-[#EFF8F2] p-4 sm:p-5 rounded-lg border-2 border-[#D6E8DF] space-y-3">
+            <div className="flex items-center justify-between border-b-2 border-[#D6E8DF] pb-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#222222]">
+                <Calculator className="w-4 h-4 text-[#1F6F5F]" />
                 <span>{t("fairPriceRangeLabel")} & Valuation</span>
               </div>
-              <span className="text-[10px] font-black text-[#3F7655] bg-[#DDEBD8] px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2 py-0.5 rounded">
                 {t("toleranceLabel")}: ±{fairPricing.tolerancePercent}%
               </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
-              <div className="bg-[#FAF8F2] p-2.5 rounded-xl">
-                <span className="text-[10px] text-slate-500 font-bold block">{t("benchmarkPriceLabel")}</span>
-                <span className="text-sm font-black text-[#203128]">₹{fairPricing.benchmarkPrice}/{unit}</span>
+              <div className="bg-[#F5FBF7] p-2.5 rounded-lg border-2 border-[#D6E8DF]">
+                <span className="text-[10px] text-[#555555] font-bold block">{t("benchmarkPriceLabel")}</span>
+                <span className="text-sm font-bold text-[#222222]">₹{fairPricing.benchmarkPrice}/{unit}</span>
               </div>
 
-              <div className="bg-[#FAF8F2] p-2.5 rounded-xl">
-                <span className="text-[10px] text-slate-500 font-bold block">{t("lowerLimitLabel")}</span>
-                <span className="text-sm font-black text-emerald-700">₹{fairPricing.lowerLimit}/{unit}</span>
+              <div className="bg-[#F5FBF7] p-2.5 rounded-lg border-2 border-[#D6E8DF]">
+                <span className="text-[10px] text-[#555555] font-bold block">{t("lowerLimitLabel")}</span>
+                <span className="text-sm font-bold text-[#1F6F5F]">₹{fairPricing.lowerLimit}/{unit}</span>
               </div>
 
-              <div className="bg-[#FAF8F2] p-2.5 rounded-xl">
-                <span className="text-[10px] text-slate-500 font-bold block">{t("upperLimitLabel")}</span>
-                <span className="text-sm font-black text-[#3F7655]">₹{fairPricing.upperLimit}/{unit}</span>
+              <div className="bg-[#F5FBF7] p-2.5 rounded-lg border-2 border-[#D6E8DF]">
+                <span className="text-[10px] text-[#555555] font-bold block">{t("upperLimitLabel")}</span>
+                <span className="text-sm font-bold text-[#2FA084]">₹{fairPricing.upperLimit}/{unit}</span>
               </div>
 
-              <div className="bg-[#DDEBD8]/50 p-2.5 rounded-xl border border-[#3F7655]/20">
-                <span className="text-[10px] text-[#244936] font-bold block">{t("estimatedLotValueLabel")}</span>
-                <span className="text-sm font-black text-[#244936]">₹{fairPricing.estimatedLotValue.toLocaleString()}</span>
+              <div className="bg-[#F5FBF7] p-2.5 rounded-lg border-2 border-[#D6E8DF]">
+                <span className="text-[10px] text-[#555555] font-bold block">{t("estimatedLotValueLabel")}</span>
+                <span className="text-sm font-bold text-[#1F6F5F]">₹{fairPricing.estimatedLotValue.toLocaleString()}</span>
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-500 italic text-center">
+            <p className="text-[11px] text-[#555555] text-center">
               {t("fairPriceExplanation")}
             </p>
           </div>
 
           {/* Notes & Optional Image */}
           <div>
-            <label className="block text-xs font-extrabold text-[#203128] mb-1">
+            <label className="block text-xs font-bold text-[#222222] mb-1">
               {t("notesLabel")}
             </label>
             <textarea
@@ -400,23 +400,23 @@ export default function AddWasteModal({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder={t("addWastePlaceholderStorage")}
-              className="w-full text-xs font-medium bg-white border border-[#3F7655]/20 rounded-xl p-3 focus:outline-none focus:border-[#3F7655]"
+              className="w-full text-xs bg-white border-2 border-[#D6E8DF] rounded-lg p-3 focus:outline-none focus:border-[#B8D9C8]"
             />
           </div>
 
           {/* Actions */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-[#3F7655]/15">
+          <div className="pt-2 flex items-center justify-end gap-3 border-t-2 border-[#D6E8DF]">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 text-xs font-bold text-slate-600 bg-white hover:bg-slate-100 border border-slate-200 rounded-xl transition cursor-pointer"
+              className="px-5 py-2.5 text-xs font-bold text-[#555555] bg-[#F5FBF7] hover:border-[#B8D9C8] border-2 border-[#D6E8DF] rounded-lg transition cursor-pointer"
             >
               {t("cancel")}
             </button>
 
             <button
               type="submit"
-              className="px-6 py-3 text-xs font-extrabold text-white bg-[#3F7655] hover:bg-[#244936] rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer"
+              className="px-6 py-3 text-xs font-bold text-white bg-[#1F6F5F] hover:bg-[#2FA084] rounded-lg transition flex items-center gap-2 cursor-pointer"
             >
               <ShieldCheck className="w-4 h-4" />
               <span>{t("createDigitalLotBtn")}</span>
