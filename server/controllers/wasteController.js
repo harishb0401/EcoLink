@@ -4,6 +4,72 @@ import { classifyEWaste, calculateFairPriceRange } from '../services/pricingServ
 import { matchLotsToRecycler } from '../services/matchingService.js';
 
 /**
+ * Upload Waste Image to Supabase Storage
+ * POST /api/waste/upload-image
+ */
+export async function uploadWasteImage(req, res, next) {
+  try {
+    if (!supabase) return res.status(500).json({ success: false, message: 'Database/Storage client is unavailable' });
+
+    const collectorId = req.user.id;
+    const { imageBase64, filename, contentType } = req.body;
+
+    if (!imageBase64) {
+      return res.status(400).json({ success: false, message: 'Image data is required' });
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const detectedType = (contentType || 'image/jpeg').toLowerCase();
+    if (!allowedTypes.includes(detectedType)) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid image format. Supported formats: JPG, JPEG, PNG, WEBP.' 
+      });
+    }
+
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    if (buffer.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Image size exceeds the 5MB limit.' 
+      });
+    }
+
+    const ext = detectedType === 'image/png' ? 'png' : detectedType === 'image/webp' ? 'webp' : 'jpg';
+    const cleanName = (filename || 'image').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const filePath = `${collectorId}/${Date.now()}_${cleanName}.${ext}`;
+
+    const { data: uploadData, error: uploadErr } = await supabase.storage
+      .from('waste-images')
+      .upload(filePath, buffer, {
+        contentType: detectedType,
+        upsert: true
+      });
+
+    if (uploadErr) {
+      throw new Error(`Supabase Storage upload failed: ${uploadErr.message}`);
+    }
+
+    const { data: publicData } = supabase.storage
+      .from('waste-images')
+      .getPublicUrl(filePath);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        path: filePath,
+        url: publicData.publicUrl,
+        filename: `${cleanName}.${ext}`
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+/**
  * Create Waste Lot (Collector only)
  * POST /api/waste
  */
@@ -15,23 +81,72 @@ export async function createWasteLot(req, res, next) {
     const {
       clientOperationId,
       category,
+      categoryOther,
       material,
       materialType,
       description,
       quantity,
       unit = 'kg',
+      totalWeightKg,
       condition = 'Non-working / Scrap',
       notes,
       location,
       locationText,
+      collectionAddress,
+      cityDistrict,
+      storageCondition,
+      storageConditionDetails,
+      hazardousCondition,
+      hazardousConditionDetails,
+      expectedPrice,
+      preferredPickupDate,
+      imageUrls = [],
       latitude,
       longitude
     } = req.body;
 
-    const parsedQuantity = parseFloat(quantity);
-    if (!parsedQuantity || parsedQuantity <= 0) {
-      return res.status(400).json({ success: false, message: 'Quantity must be greater than 0' });
+    // Quantity is optional (fill if needed, not compulsory)
+    const parsedQuantity = (quantity !== undefined && quantity !== null && quantity !== '')
+      ? parseFloat(quantity)
+      : null;
+    if (parsedQuantity !== null && (isNaN(parsedQuantity) || parsedQuantity <= 0)) {
+      return res.status(400).json({ success: false, message: 'Quantity must be greater than 0 if provided' });
     }
+
+    // Total weight is separate and required
+    const parsedWeight = parseFloat(totalWeightKg) || (parsedQuantity !== null ? parsedQuantity : 0);
+    if (!parsedWeight || parsedWeight <= 0) {
+      return res.status(400).json({ success: false, message: 'Total weight is required and must be greater than 0' });
+    }
+
+    const parsedExpectedPrice = expectedPrice !== undefined && expectedPrice !== null && expectedPrice !== ''
+      ? parseFloat(expectedPrice)
+      : null;
+    if (parsedExpectedPrice !== null && parsedExpectedPrice < 0) {
+      return res.status(400).json({ success: false, message: 'Expected price cannot be negative' });
+    }
+
+    const finalCategory = (category === 'Other' && categoryOther) ? categoryOther : (category || 'Other');
+    const finalMaterial = material || categoryOther || finalCategory;
+    const finalAddress = collectionAddress || locationText || location || 'Chennai Hub';
+    const finalLocation = cityDistrict ? `${finalAddress}, ${cityDistrict}` : finalAddress;
+
+    // Structured description incorporating all details
+    const detailLines = [
+      description ? description.trim() : null,
+      notes ? `[Notes: ${notes.trim()}]` : null,
+      category === 'Other' && categoryOther ? `[Custom Item Type: ${categoryOther}]` : null,
+      storageCondition ? `[Storage: ${storageCondition}${storageConditionDetails ? ` - ${storageConditionDetails}` : ''}]` : null,
+      hazardousCondition ? `[Hazardous/Battery: ${hazardousCondition}${hazardousConditionDetails ? ` - ${hazardousConditionDetails}` : ''}]` : null,
+      parsedExpectedPrice !== null ? `[Expected Price: ₹${parsedExpectedPrice}]` : null,
+      preferredPickupDate ? `[Preferred Pickup: ${preferredPickupDate}]` : null,
+      clientOperationId ? `[OpId: ${clientOperationId}]` : null
+    ].filter(Boolean);
+    const finalDescription = detailLines.join('\n');
+
+    const sanitizedImages = Array.isArray(imageUrls)
+      ? imageUrls.filter(url => typeof url === 'string' && url.trim().length > 0)
+      : [];
 
     // Idempotency check: if clientOperationId provided, check if this lot was already synced
     if (clientOperationId) {
@@ -53,74 +168,120 @@ export async function createWasteLot(req, res, next) {
             material: existingLot.material_type,
             location: existingLot.location,
             locationText: existingLot.location,
-            totalWeightKg: existingLot.quantity,
+            totalWeightKg: existingLot.total_weight_kg || existingLot.quantity,
             benchmarkPrice: existingLot.benchmark_rate,
-            estimatedLotValue: Math.round((existingLot.benchmark_rate || 0) * (existingLot.quantity || 0))
+            estimatedLotValue: Math.round((existingLot.benchmark_rate || 0) * (existingLot.quantity || 0)),
+            collectionAddress: existingLot.collection_address || existingLot.location,
+            cityDistrict: existingLot.city_district || '',
+            storageCondition: existingLot.storage_condition || 'Indoor storage',
+            hazardousCondition: existingLot.hazardous_condition || 'No known batteries or hazardous materials',
+            expectedPrice: existingLot.expected_price || 0,
+            preferredPickupDate: existingLot.preferred_pickup_date || existingLot.pickup_date,
+            imageUrls: existingLot.image_urls || [],
+            notes: existingLot.notes || ''
           }
         });
       }
     }
 
     // 1. Authoritative server-side classification and pricing calculation
-    const classification = classifyEWaste(material || category);
+    const classification = classifyEWaste(finalMaterial || finalCategory);
     const resolvedBenchmark = classification.benchmarkPrice || 350;
     const resolvedTolerance = classification.tolerance || 0.25;
-    const pricingRange = calculateFairPriceRange(resolvedBenchmark, resolvedTolerance, parsedQuantity);
+    const pricingRange = calculateFairPriceRange(resolvedBenchmark, resolvedTolerance, parsedWeight);
+    const calculatedEstimatedValue = Math.round(resolvedBenchmark * parsedWeight);
 
-    // 2. Generate unique Lot ID
-    const lotId = generateLotId();
+    // 2. Generate unique collision-safe Lot ID (format: EWL-2026-XXXXXX)
+    let lotId = generateLotId();
+    let collisionChecks = 0;
+    while (collisionChecks < 5) {
+      const { data: existingWithId } = await supabase
+        .from('waste_lots')
+        .select('id')
+        .eq('lot_id', lotId)
+        .maybeSingle();
+      if (!existingWithId) break;
+      lotId = generateLotId();
+      collisionChecks++;
+    }
 
-    const finalLocationText = locationText || location || 'Chennai Hub';
-    const baseDescription = description || notes || `${parsedQuantity} ${unit} declared`;
-    const finalDescription = clientOperationId 
-      ? `${baseDescription} [OpId: ${clientOperationId}]`
-      : baseDescription;
+    // Determine initial status:
+    // Conforms to database enum lot_status ('AWAITING_OFFERS' represents available open lots)
+    const initialStatus = 'AWAITING_OFFERS';
 
-    // 3. Insert waste lot into Supabase
-    const { data: newLot, error: insertErr } = await supabase
+    // 3. Prepare Payloads (Base Schema + Extended Schema fallback)
+    const basePayload = {
+      lot_id: lotId,
+      collector_id: collectorId,
+      category: classification.category || finalCategory,
+      material_type: finalMaterial,
+      description: finalDescription,
+      quantity: parsedQuantity !== null ? parsedQuantity : parsedWeight,
+      unit: unit || 'kg',
+      condition: condition || 'Non-working / Scrap',
+      location: finalLocation,
+      latitude: latitude !== undefined && latitude !== null ? parseFloat(latitude) : null,
+      longitude: longitude !== undefined && longitude !== null ? parseFloat(longitude) : null,
+      benchmark_rate: resolvedBenchmark,
+      min_fair_price: pricingRange.lowerLimit,
+      max_fair_price: pricingRange.upperLimit,
+      status: initialStatus,
+      image_urls: sanitizedImages,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+
+    const extendedPayload = {
+      ...basePayload,
+      total_weight_kg: parsedWeight,
+      estimated_total_value: calculatedEstimatedValue,
+      collection_address: finalAddress,
+      city_district: cityDistrict || '',
+      storage_condition: storageCondition || 'Indoor storage',
+      hazardous_condition: hazardousCondition || 'No known batteries or hazardous materials',
+      expected_price: parsedExpectedPrice,
+      preferred_pickup_date: preferredPickupDate ? new Date(preferredPickupDate).toISOString() : null,
+      notes: notes || ''
+    };
+
+    let newLot;
+    const { data: extLot, error: extErr } = await supabase
       .from('waste_lots')
-      .insert([
-        {
-          lot_id: lotId,
-          collector_id: collectorId,
-          category: classification.category,
-          material_type: material || classification.material,
-          description: finalDescription,
-          quantity: parsedQuantity,
-          unit: unit || 'kg',
-          condition: condition || 'Non-working / Scrap',
-          location: finalLocationText,
-          latitude: latitude !== undefined ? parseFloat(latitude) : null,
-          longitude: longitude !== undefined ? parseFloat(longitude) : null,
-          benchmark_rate: resolvedBenchmark,
-          min_fair_price: pricingRange.lowerLimit,
-          max_fair_price: pricingRange.upperLimit,
-          status: 'AWAITING_OFFERS',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
-      ])
+      .insert([extendedPayload])
       .select()
       .single();
 
-    if (insertErr) {
-      throw new Error(insertErr.message);
+    if (extErr) {
+      // If error is due to missing columns before Supabase SQL migration is run, fallback to base columns
+      if (extErr.code === 'PGRST204' || extErr.message?.includes('column')) {
+        const { data: fallbackLot, error: fbErr } = await supabase
+          .from('waste_lots')
+          .insert([basePayload])
+          .select()
+          .single();
+        if (fbErr) throw new Error(fbErr.message);
+        newLot = { ...fallbackLot, ...extendedPayload };
+      } else {
+        throw new Error(extErr.message);
+      }
+    } else {
+      newLot = extLot;
     }
 
-    // 5. Insert timeline event
+    // 4. Insert timeline event
     await supabase.from('lot_timeline').insert([
       {
         lot_id: newLot.id,
         event_type: 'CREATED',
         title: 'Waste Lot Registered',
-        description: `${parsedQuantity} ${unit} ${classification.material} declared. Benchmark ₹${resolvedBenchmark}/${unit} (Fair Range ₹${pricingRange.lowerLimit}–₹${pricingRange.upperLimit}/${unit}).`,
+        description: `${parsedQuantity} ${unit} (${parsedWeight} kg) ${finalMaterial} declared. Benchmark ₹${resolvedBenchmark}/${unit} (Fair Range ₹${pricingRange.lowerLimit}–₹${pricingRange.upperLimit}/${unit}).`,
         created_at: new Date().toISOString()
       },
       {
         lot_id: newLot.id,
         event_type: 'CLASSIFIED',
         title: 'Automatic Material Classification',
-        description: `Categorized as ${classification.category} (${classification.hazardLevel || 'Medium'} Hazard Level)`,
+        description: `Categorized as ${finalCategory} (${classification.hazardLevel || 'Medium'} Hazard Level)`,
         created_at: new Date().toISOString()
       }
     ]);
@@ -134,9 +295,17 @@ export async function createWasteLot(req, res, next) {
         material: newLot.material_type,
         location: newLot.location,
         locationText: newLot.location,
-        totalWeightKg: newLot.quantity,
+        totalWeightKg: newLot.total_weight_kg || parsedWeight,
         benchmarkPrice: newLot.benchmark_rate,
-        estimatedLotValue: Math.round((newLot.benchmark_rate || 0) * (newLot.quantity || 0)),
+        estimatedLotValue: Math.round((newLot.benchmark_rate || 0) * (parsedWeight || 0)),
+        collectionAddress: newLot.collection_address || finalAddress,
+        cityDistrict: newLot.city_district || cityDistrict || '',
+        storageCondition: newLot.storage_condition || storageCondition || 'Indoor storage',
+        hazardousCondition: newLot.hazardous_condition || hazardousCondition || 'No known batteries or hazardous materials',
+        expectedPrice: newLot.expected_price !== undefined ? newLot.expected_price : parsedExpectedPrice,
+        preferredPickupDate: newLot.preferred_pickup_date || preferredPickupDate,
+        imageUrls: newLot.image_urls || sanitizedImages,
+        notes: newLot.notes || notes || '',
         allowedPriceRange: {
           minPrice: newLot.min_fair_price,
           maxPrice: newLot.max_fair_price,
@@ -175,21 +344,43 @@ export async function getMyWasteLots(req, res, next) {
     // Format for frontend consumption
     const formattedLots = (lots || []).map(lot => {
       const activeOffers = (lot.offers || []).filter(o => o.status !== 'CANCELLED');
+      const benchmark = lot.benchmark_rate || 350;
+      const weight = parseFloat(lot.total_weight_kg || lot.quantity) || 1;
+      const estimatedVal = lot.estimated_total_value !== undefined && lot.estimated_total_value !== null
+        ? lot.estimated_total_value
+        : Math.round(benchmark * weight);
+
       return {
         ...lot,
-        id: lot.lot_id, // Frontend uses lot_id (e.g. REQ-2026-XXXXXX) as primary id for routing
+        id: lot.lot_id, // Frontend uses lot_id (e.g. EWL-2026-XXXXXX) as primary id for routing
         dbId: lot.id,
         lotId: lot.lot_id,
-        material: lot.material_type,
+        collectorId: lot.collector_id,
+        material: lot.material_type || lot.category,
         location: lot.location,
         locationText: lot.location,
-        totalWeightKg: lot.quantity,
-        benchmarkPrice: lot.benchmark_rate,
-        estimatedLotValue: Math.round((lot.benchmark_rate || 0) * (lot.quantity || 0)),
+        quantity: lot.quantity,
+        unit: lot.unit || 'kg',
+        totalWeightKg: lot.total_weight_kg || lot.quantity,
+        benchmarkPrice: benchmark,
+        benchmarkRate: benchmark,
+        estimatedLotValue: estimatedVal,
+        estimatedTotalValue: estimatedVal,
+        collectionAddress: lot.collection_address || lot.location,
+        cityDistrict: lot.city_district || '',
+        storageCondition: lot.storage_condition || 'Indoor storage',
+        hazardousCondition: lot.hazardous_condition || 'No known batteries or hazardous materials',
+        expectedPrice: lot.expected_price || 0,
+        preferredPickupDate: lot.preferred_pickup_date || lot.pickup_date,
+        imageUrls: lot.image_urls || [],
+        notes: lot.notes || '',
+        status: lot.status,
+        createdAt: lot.created_at,
+        createdDate: lot.created_at ? new Date(lot.created_at).toLocaleString('en-IN') : 'Recent',
         allowedPriceRange: {
           minPrice: lot.min_fair_price,
           maxPrice: lot.max_fair_price,
-          rangeLabel: `₹${lot.min_fair_price}–₹${lot.max_fair_price}/${lot.unit}`
+          rangeLabel: `₹${lot.min_fair_price}–₹${lot.max_fair_price}/${lot.unit || 'kg'}`
         },
         offersCount: activeOffers.length,
         offers: activeOffers,
@@ -215,42 +406,86 @@ export async function getAvailableWasteLots(req, res, next) {
     if (!supabase) return res.status(500).json({ success: false, message: 'Database client is unavailable' });
 
     // Fetch recycler profile
-    const { data: recyclerProfile } = await supabase
+    let recyclerProfile = null;
+    const { data: recData } = await supabase
       .from('recycler_profiles')
       .select('*')
       .eq('user_id', req.user.id)
       .maybeSingle();
 
-    // Fetch open lots
-    const { data: openLots, error: lotsErr } = await supabase
+    recyclerProfile = recData;
+
+    // Query native database lot_status enum values for open collector requests
+    const eligibleStatuses = ['AWAITING_OFFERS', 'OFFERS_RECEIVED'];
+
+    // Attempt select with profiles join; fallback to plain query if foreign-key alias fails
+    let openLots = [];
+    const queryWithJoin = await supabase
       .from('waste_lots')
       .select(`
         *,
         profiles!waste_lots_collector_id_fkey(full_name, phone, location)
       `)
-      .in('status', ['AWAITING_OFFERS', 'OFFERS_RECEIVED'])
+      .in('status', eligibleStatuses)
       .order('created_at', { ascending: false });
 
-    if (lotsErr) throw new Error(lotsErr.message);
+    if (queryWithJoin.error) {
+      console.warn('Joined query note (using direct query fallback):', queryWithJoin.error.message);
+      const queryDirect = await supabase
+        .from('waste_lots')
+        .select('*')
+        .in('status', eligibleStatuses)
+        .order('created_at', { ascending: false });
+
+      if (queryDirect.error) throw new Error(queryDirect.error.message);
+      openLots = queryDirect.data || [];
+    } else {
+      openLots = queryWithJoin.data || [];
+    }
 
     // Run matching engine
     const matchedLots = matchLotsToRecycler(openLots || [], recyclerProfile);
 
     // Format for frontend
-    const formatted = matchedLots.map(lot => ({
-      ...lot,
-      id: lot.lot_id,
-      dbId: lot.id,
-      lotId: lot.lot_id,
-      material: lot.material_type,
-      location: lot.location,
-      locationText: lot.location,
-      totalWeightKg: lot.quantity,
-      benchmarkPrice: lot.benchmark_rate,
-      estimatedLotValue: Math.round((lot.benchmark_rate || 0) * (lot.quantity || 0)),
-      collectorName: lot.profiles?.full_name || 'Registered Collector',
-      collectorPhone: lot.profiles?.phone
-    }));
+    const formatted = matchedLots.map(lot => {
+      const benchmark = lot.benchmark_rate || 350;
+      const weight = parseFloat(lot.total_weight_kg || lot.quantity) || 1;
+      const estimatedVal = lot.estimated_total_value !== undefined && lot.estimated_total_value !== null
+        ? lot.estimated_total_value
+        : Math.round(benchmark * weight);
+
+      return {
+        ...lot,
+        id: lot.lot_id,
+        dbId: lot.id,
+        lotId: lot.lot_id,
+        collectorId: lot.collector_id,
+        category: lot.category,
+        material: lot.material_type || lot.category,
+        location: lot.location,
+        locationText: lot.location,
+        quantity: lot.quantity,
+        unit: lot.unit || 'kg',
+        totalWeightKg: lot.total_weight_kg || lot.quantity,
+        benchmarkPrice: benchmark,
+        benchmarkRate: benchmark,
+        estimatedLotValue: estimatedVal,
+        estimatedTotalValue: estimatedVal,
+        expectedPrice: lot.expected_price || 0,
+        collectionAddress: lot.collection_address || lot.location,
+        cityDistrict: lot.city_district || '',
+        storageCondition: lot.storage_condition || 'Indoor storage',
+        hazardousCondition: lot.hazardous_condition || 'No known batteries or hazardous materials',
+        preferredPickupDate: lot.preferred_pickup_date || lot.pickup_date,
+        imageUrls: lot.image_urls || [],
+        notes: lot.notes || '',
+        status: lot.status,
+        createdAt: lot.created_at,
+        createdDate: lot.created_at ? new Date(lot.created_at).toLocaleString('en-IN') : 'Recent',
+        collectorName: lot.profiles?.full_name || 'Registered Collector',
+        collectorPhone: lot.profiles?.phone
+      };
+    });
 
     return res.status(200).json({
       success: true,
@@ -271,7 +506,7 @@ export async function getWasteLotById(req, res, next) {
 
     const { lotId } = req.params;
 
-    // Support lookup by UUID or human lot_id
+    // Support lookup by UUID or human lot_id (EWL-... or REQ-...)
     let query = supabase
       .from('waste_lots')
       .select(`
@@ -281,10 +516,15 @@ export async function getWasteLotById(req, res, next) {
         profiles!waste_lots_collector_id_fkey(full_name, email, phone, location)
       `);
 
-    if (lotId.includes('-') && lotId.startsWith('REQ-')) {
+    const isHumanId = lotId.includes('-') && (lotId.startsWith('REQ-') || lotId.startsWith('EWL-'));
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lotId);
+
+    if (isHumanId) {
       query = query.eq('lot_id', lotId);
-    } else {
+    } else if (isUUID) {
       query = query.or(`id.eq.${lotId},lot_id.eq.${lotId}`);
+    } else {
+      query = query.eq('lot_id', lotId);
     }
 
     const { data: lot, error: lotErr } = await query.maybeSingle();
@@ -298,22 +538,45 @@ export async function getWasteLotById(req, res, next) {
       return res.status(403).json({ success: false, message: 'Forbidden: Access restricted to lot owner' });
     }
 
+    const benchmark = lot.benchmark_rate || 350;
+    const weight = parseFloat(lot.total_weight_kg || lot.quantity) || 1;
+    const estimatedVal = lot.estimated_total_value !== undefined && lot.estimated_total_value !== null
+      ? lot.estimated_total_value
+      : Math.round(benchmark * weight);
+
     const formatted = {
       ...lot,
       id: lot.lot_id,
       dbId: lot.id,
       lotId: lot.lot_id,
-      material: lot.material_type,
+      collectorId: lot.collector_id,
+      material: lot.material_type || lot.category,
+      category: lot.category,
       location: lot.location,
       locationText: lot.location,
-      totalWeightKg: lot.quantity,
-      benchmarkPrice: lot.benchmark_rate,
-      estimatedLotValue: Math.round((lot.benchmark_rate || 0) * (lot.quantity || 0)),
+      quantity: lot.quantity,
+      unit: lot.unit || 'kg',
+      totalWeightKg: lot.total_weight_kg || lot.quantity,
+      benchmarkPrice: benchmark,
+      benchmarkRate: benchmark,
+      estimatedLotValue: estimatedVal,
+      estimatedTotalValue: estimatedVal,
+      collectionAddress: lot.collection_address || lot.location,
+      cityDistrict: lot.city_district || '',
+      storageCondition: lot.storage_condition || 'Indoor storage',
+      hazardousCondition: lot.hazardous_condition || 'No known batteries or hazardous materials',
+      expectedPrice: lot.expected_price || 0,
+      preferredPickupDate: lot.preferred_pickup_date || lot.pickup_date,
+      imageUrls: lot.image_urls || [],
+      notes: lot.notes || '',
+      status: lot.status,
+      createdAt: lot.created_at,
+      createdDate: lot.created_at ? new Date(lot.created_at).toLocaleString('en-IN') : 'Recent',
       collectorName: lot.profiles?.full_name,
       allowedPriceRange: {
         minPrice: lot.min_fair_price,
         maxPrice: lot.max_fair_price,
-        rangeLabel: `₹${lot.min_fair_price}–₹${lot.max_fair_price}/${lot.unit}`
+        rangeLabel: `₹${lot.min_fair_price}–₹${lot.max_fair_price}/${lot.unit || 'kg'}`
       },
       timeline: (lot.lot_timeline || []).sort((a, b) => new Date(a.created_at) - new Date(b.created_at)),
       offers: (lot.offers || [])
@@ -340,10 +603,15 @@ export async function getWasteLotOffers(req, res, next) {
 
     // Find the lot
     let lotQuery = supabase.from('waste_lots').select('id, lot_id, collector_id');
-    if (lotId.startsWith('REQ-')) {
+    if (lotId.startsWith('REQ-') || lotId.startsWith('EWL-')) {
       lotQuery = lotQuery.eq('lot_id', lotId);
     } else {
-      lotQuery = lotQuery.or(`id.eq.${lotId},lot_id.eq.${lotId}`);
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(lotId);
+      if (isUUID) {
+        lotQuery = lotQuery.or(`id.eq.${lotId},lot_id.eq.${lotId}`);
+      } else {
+        lotQuery = lotQuery.eq('lot_id', lotId);
+      }
     }
 
     const { data: lot, error: lotErr } = await lotQuery.maybeSingle();

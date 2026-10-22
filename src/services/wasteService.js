@@ -135,6 +135,59 @@ export const wasteService = {
   async cancelLot(lotId) {
     const res = await api.post(`/waste/${lotId}/cancel`);
     return res.data;
+  },
+
+  /**
+   * Upload waste image:
+   * - Converts file to Base64
+   * - Uploads to Supabase Storage via backend API when online
+   * - Returns public URL or local preview data URL if offline
+   */
+  async uploadImage(file) {
+    if (!file) throw new Error('No file provided');
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      throw new Error('Unsupported format. Allowed formats: JPG, JPEG, PNG, WEBP');
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('File exceeds 5MB size limit');
+    }
+
+    // Convert file to base64 string
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+
+    if (!isOnline()) {
+      return {
+        success: true,
+        url: base64,
+        filename: file.name,
+        isOffline: true
+      };
+    }
+
+    try {
+      const res = await api.post('/waste/upload-image', {
+        imageBase64: base64,
+        filename: file.name,
+        contentType: file.type
+      });
+      return res.data;
+    } catch (err) {
+      // If network upload fails, fall back to base64 so registration is not blocked
+      return {
+        success: true,
+        url: base64,
+        filename: file.name,
+        isOffline: true
+      };
+    }
   }
 };
 

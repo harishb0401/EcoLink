@@ -81,11 +81,11 @@ export default function App() {
         const [lots, txs] = await Promise.all([
           wasteService.getMyLots().catch(err => {
             console.warn('Could not fetch collector lots:', err.message);
-            return mockWasteLots;
+            return [];
           }),
           transactionService.getMyTransactions().catch(err => {
             console.warn('Could not fetch collector transactions:', err.message);
-            return mockTransactions;
+            return [];
           })
         ]);
         setMaterialLots(lots || []);
@@ -94,15 +94,15 @@ export default function App() {
         const [availableLots, myOffers, txs] = await Promise.all([
           wasteService.getAvailableLots().catch(err => {
             console.warn('Could not fetch available lots:', err.message);
-            return mockWasteLots;
+            return [];
           }),
           offerService.getMyOffers().catch(err => {
             console.warn('Could not fetch recycler offers:', err.message);
-            return mockOffers;
+            return [];
           }),
           transactionService.getMyTransactions().catch(err => {
             console.warn('Could not fetch recycler transactions:', err.message);
-            return mockTransactions;
+            return [];
           })
         ]);
         setMaterialLots(availableLots || []);
@@ -153,19 +153,31 @@ export default function App() {
   const handleLotCreated = async (newLotData) => {
     try {
       const createdLot = await wasteService.createLot({
+        ...newLotData,
         category: newLotData.category,
-        material: newLotData.material,
-        materialType: newLotData.material,
-        description: newLotData.description || newLotData.notes,
+        categoryOther: newLotData.categoryOther,
+        material: newLotData.material || newLotData.materialType,
+        materialType: newLotData.material || newLotData.materialType,
+        description: newLotData.description || newLotData.notes || '',
         quantity: newLotData.quantity,
         unit: newLotData.unit || 'kg',
+        totalWeightKg: newLotData.totalWeightKg,
         condition: newLotData.condition || 'Non-working / Scrap',
         notes: newLotData.notes,
-        location: newLotData.location,
-        locationText: newLotData.location,
+        location: newLotData.location || newLotData.collectionAddress,
+        locationText: newLotData.location || newLotData.collectionAddress,
         latitude: newLotData.latitude,
         longitude: newLotData.longitude,
-        quotedPrice: newLotData.quotedPrice,
+        collectionAddress: newLotData.collectionAddress,
+        cityDistrict: newLotData.cityDistrict,
+        storageCondition: newLotData.storageCondition,
+        storageConditionDetails: newLotData.storageConditionDetails,
+        hazardousCondition: newLotData.hazardousCondition,
+        hazardousConditionDetails: newLotData.hazardousConditionDetails,
+        expectedPrice: newLotData.expectedPrice,
+        preferredPickupDate: newLotData.preferredPickupDate,
+        imageUrls: newLotData.imageUrls || [],
+        quotedPrice: newLotData.quotedPrice || newLotData.expectedPrice,
         benchmarkPrice: newLotData.benchmarkPrice,
         estimatedLotValue: newLotData.estimatedLotValue,
         allowedPriceRange: newLotData.allowedPriceRange

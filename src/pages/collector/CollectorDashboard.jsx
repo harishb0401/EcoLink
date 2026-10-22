@@ -1,10 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Plus, ArrowRight, Package, DollarSign, Scale, ShieldCheck, 
-  CheckCircle2, Clock, Sparkles, Inbox, Award
-} from 'lucide-react';
-import StatCard from '../../components/Cards/StatCard';
+import { Plus, ArrowRight, CheckCircle2 } from 'lucide-react';
 import StatusBadge from '../../components/StatusBadge';
 import { mockWasteLots, mockOffers, mockTransactions } from '../../data/mockData';
 import { useTranslation } from '../../i18n';
@@ -20,12 +16,6 @@ export default function CollectorDashboard({
 
   const myLots = materialLots || mockWasteLots;
   const allOffers = offers || mockOffers;
-
-  const activeRequests = myLots.filter(l => !['COMPLETED', 'CANCELLED', 'REJECTED'].includes(l.status));
-  const awaitingOffersCount = myLots.filter(l => ['AWAITING_OFFERS', 'SUBMITTED', 'AVAILABLE', 'REGISTERED'].includes(l.status)).length;
-  const totalWeight = myLots.reduce((acc, l) => acc + (parseFloat(l.quantity || l.totalWeightKg) || 0), 0);
-  const totalEarnings = (transactions || []).reduce((acc, tx) => acc + (tx.totalValue || 0), 0) + 
-                        myLots.filter(l => l.status === 'COMPLETED').reduce((s, l) => s + (l.agreedTotalValue || l.estimatedLotValue || 0), 0);
 
   return (
     <div className="space-y-8 bg-white text-[#222222]">
@@ -59,69 +49,6 @@ export default function CollectorDashboard({
             <Plus className="w-4 h-4" />
             <span>{t('createEWasteRequest')}</span>
           </button>
-        </div>
-      </div>
-
-      {/* Quick Action Cards (Request-Driven Flow) */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* Card 1: Create Request */}
-        <div className="bg-[#F5FBF7] p-6 rounded-lg border-2 border-[#D6E8DF] space-y-3 flex flex-col justify-between hover:border-[#B8D9C8] transition">
-          <div>
-            <div className="w-10 h-10 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center font-bold mb-3">
-              <Plus className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-[#222222]">{t('createEWasteRequest')}</h3>
-            <p className="text-xs text-[#555555] mt-1">
-              {t('addEWasteSubtitle')}
-            </p>
-          </div>
-          <Link
-            to="/collector/register-waste"
-            className="text-xs font-bold text-[#1F6F5F] hover:text-[#2FA084] flex items-center gap-1.5 pt-3 border-t-2 border-[#D6E8DF]"
-          >
-            <span>{t('navRegisterEWaste')}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {/* Card 2: My Requests */}
-        <div className="bg-[#F5FBF7] p-6 rounded-lg border-2 border-[#D6E8DF] space-y-3 flex flex-col justify-between hover:border-[#B8D9C8] transition">
-          <div>
-            <div className="w-10 h-10 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center font-bold mb-3">
-              <Inbox className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-[#222222]">{t('myDeclaredLots')}</h3>
-            <p className="text-xs text-[#555555] mt-1">
-              {t('availableRequestsDesc')}
-            </p>
-          </div>
-          <Link
-            to="/collector/requests"
-            className="text-xs font-bold text-[#1F6F5F] hover:text-[#2FA084] flex items-center gap-1.5 pt-3 border-t-2 border-[#D6E8DF]"
-          >
-            <span>{t('viewDetails')}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
-
-        {/* Card 3: Transactions */}
-        <div className="bg-[#F5FBF7] p-6 rounded-lg border-2 border-[#D6E8DF] space-y-3 flex flex-col justify-between hover:border-[#B8D9C8] transition">
-          <div>
-            <div className="w-10 h-10 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center font-bold mb-3">
-              <Award className="w-5 h-5" />
-            </div>
-            <h3 className="text-base font-bold text-[#222222]">{t('transactionsTitle')}</h3>
-            <p className="text-xs text-[#555555] mt-1">
-              {t('transactionsSubtitle')}
-            </p>
-          </div>
-          <Link
-            to="/collector/transactions"
-            className="text-xs font-bold text-[#1F6F5F] hover:text-[#2FA084] flex items-center gap-1.5 pt-3 border-t-2 border-[#D6E8DF]"
-          >
-            <span>{t('navTransactions')}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
         </div>
       </div>
 

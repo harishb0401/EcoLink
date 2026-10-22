@@ -50,8 +50,8 @@ app.use(
 );
 
 // Body Parsers
-app.use(express.json({ limit: '5mb' }));
-app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // General Rate Limiter (500 requests per 15 minutes)
 const globalLimiter = rateLimit({

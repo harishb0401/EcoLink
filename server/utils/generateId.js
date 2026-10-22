@@ -5,7 +5,7 @@ import crypto from 'crypto';
  */
 export function generateLotId() {
   const randomDigits = Math.floor(100000 + Math.random() * 900000);
-  return `REQ-2026-${randomDigits}`;
+  return `EWL-2026-${randomDigits}`;
 }
 
 export function generateOfferId() {

@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
-  Menu, X, ArrowRight, User, Bell, 
-  CheckCircle2, LogOut, Settings, ShieldCheck, 
+  Menu, X, ArrowRight, User, 
+  CheckCircle2, LogOut, ShieldCheck, 
   ChevronDown
 } from 'lucide-react';
 import { useTranslation } from '../../i18n';
@@ -21,15 +21,12 @@ export default function Navbar({
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-  const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
 
   const profileRef = useRef(null);
-  const notifRef = useRef(null);
 
   // Close dropdowns on route change or outside click
   useEffect(() => {
     setProfileDropdownOpen(false);
-    setNotifDropdownOpen(false);
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
@@ -37,9 +34,6 @@ export default function Navbar({
     function handleClickOutside(event) {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setProfileDropdownOpen(false);
-      }
-      if (notifRef.current && !notifRef.current.contains(event.target)) {
-        setNotifDropdownOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -67,20 +61,6 @@ export default function Navbar({
     isRecycler ? t("recyclerRole") : t("publicRole");
 
   const profilePath = isCollector ? '/collector/profile' : '/recycler/profile';
-  const notifPath = isCollector ? '/collector/notifications' : '/recycler/notifications';
-
-  // Notifications Mock Data based on role
-  const notifications = isCollector ? [
-    { id: 1, title: "Offer Received: ₹670/kg", desc: "GreenCycle submitted an offer on LOT-00125", time: "5m ago", unread: true },
-    { id: 2, title: "Phone Verified ✓", desc: "Your mobile number +91 98401 23456 is verified", time: "1h ago", unread: false },
-    { id: 3, title: "Handover Scheduled", desc: "Pickup driver assigned for LOT-00124", time: "Yesterday", unread: false }
-  ] : [
-    { id: 1, title: "New Matching Lot", desc: "30 kg Copper wiring available in Guindy", time: "12m ago", unread: true },
-    { id: 2, title: "Offer Accepted", desc: "Collector accepted your bid of ₹670/kg", time: "2h ago", unread: true },
-    { id: 3, title: "CPCB Audit Verified", desc: "EPR Compliance status: Active & Certified", time: "3d ago", unread: false }
-  ];
-
-  const unreadCount = notifications.filter(n => n.unread).length;
 
   const getNavLinkClass = (path, exact = false) => {
     const isActive = exact 
@@ -177,9 +157,6 @@ export default function Navbar({
               <Link to="/recycler/transactions" className={getNavLinkClass('/recycler/transactions')}>
                 {t("navTransactions")}
               </Link>
-              <Link to="/recycler/compliance" className={getNavLinkClass('/recycler/compliance')}>
-                {t("navCompliance")}
-              </Link>
             </nav>
           )}
 
@@ -226,66 +203,15 @@ export default function Navbar({
               </div>
             )}
 
-            {/* STATE 2: LOGGED IN -> [ 🔔 Notifications ] [ 👤 Profile ] */}
+            {/* STATE 2: LOGGED IN -> [ 👤 Profile ] */}
             {isLoggedIn && (
               <div className="flex items-center gap-2">
                 
-                {/* 🔔 Notifications Button & Dropdown */}
-                <div className="relative" ref={notifRef}>
-                  <button
-                    onClick={() => {
-                      setNotifDropdownOpen(!notifDropdownOpen);
-                      setProfileDropdownOpen(false);
-                    }}
-                    title={t("notifications")}
-                    className="p-2 rounded-lg text-[#555555] hover:text-[#1F6F5F] bg-[#F5FBF7] border-2 border-[#D6E8DF] relative transition cursor-pointer"
-                  >
-                    <Bell className="w-4 h-4 text-[#1F6F5F]" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#2FA084] rounded-full"></span>
-                    )}
-                  </button>
-
-                  {notifDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-80 bg-[#F5FBF7] rounded-lg border-2 border-[#D6E8DF] py-3 z-50">
-                      <div className="px-4 pb-2 border-b-2 border-[#D6E8DF] flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#222222]">{t("notifications")}</span>
-                        <Link to={notifPath} className="text-[10px] font-bold text-[#1F6F5F] hover:underline">
-                          {t("viewAll")}
-                        </Link>
-                      </div>
-
-                      <div className="divide-y-2 divide-[#D6E8DF] max-h-64 overflow-y-auto">
-                        {notifications.map(n => (
-                          <div 
-                            key={n.id} 
-                            onClick={() => navigate(notifPath)}
-                            className="p-3 text-xs hover:bg-[#EFF8F2] transition cursor-pointer"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-bold text-[#222222]">{t(n.title)}</span>
-                              <span className="text-[10px] text-[#555555]">{n.time}</span>
-                            </div>
-                            <p className="text-[11px] text-[#555555] mt-0.5">{t(n.desc)}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="pt-2 px-3 border-t-2 border-[#D6E8DF] text-center">
-                        <Link to={notifPath} className="text-[11px] font-bold text-[#1F6F5F] hover:underline">
-                          {t("openNotificationsCenter")} →
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
                 {/* 👤 Profile Avatar & Dropdown Menu */}
                 <div className="relative" ref={profileRef}>
                   <button
                     onClick={() => {
                       setProfileDropdownOpen(!profileDropdownOpen);
-                      setNotifDropdownOpen(false);
                     }}
                     className="flex items-center gap-2 pl-2 pr-2.5 py-1.5 rounded-lg bg-[#F5FBF7] border-2 border-[#D6E8DF] hover:border-[#B8D9C8] transition cursor-pointer"
                   >
@@ -322,17 +248,6 @@ export default function Navbar({
                           <User className="w-4 h-4 text-[#1F6F5F]" />
                           <span>{t("profile")}</span>
                         </Link>
-                        
-                        <button
-                          onClick={() => {
-                            setProfileDropdownOpen(false);
-                            alert("Account preferences & notification settings saved.");
-                          }}
-                          className="w-full text-left px-4 py-2 hover:text-[#1F6F5F] transition flex items-center gap-2.5 cursor-pointer"
-                        >
-                          <Settings className="w-4 h-4 text-[#555555]" />
-                          <span>{t("settings")}</span>
-                        </button>
                       </div>
 
                       {/* Divider & Logout */}
@@ -438,9 +353,7 @@ export default function Navbar({
               <Link to="/collector/transactions" className={getMobileNavLinkClass('/collector/transactions')}>
                 {t("navTransactions")}
               </Link>
-              <Link to="/collector/notifications" className={getMobileNavLinkClass('/collector/notifications')}>
-                {t("navNotifications")} ({unreadCount})
-              </Link>
+
 
               <div className="pt-2 border-t-2 border-[#D6E8DF]">
                 <button
@@ -474,12 +387,8 @@ export default function Navbar({
               <Link to="/recycler/transactions" className={getMobileNavLinkClass('/recycler/transactions')}>
                 {t("navTransactions")}
               </Link>
-              <Link to="/recycler/compliance" className={getMobileNavLinkClass('/recycler/compliance')}>
-                {t("navCompliance")}
-              </Link>
-              <Link to="/recycler/notifications" className={getMobileNavLinkClass('/recycler/notifications')}>
-                {t("navNotifications")} ({unreadCount})
-              </Link>
+
+
 
               <div className="pt-2 border-t-2 border-[#D6E8DF]">
                 <button

@@ -9,8 +9,9 @@ export function matchLotsToRecycler(lots = [], recyclerProfile) {
     return [];
   }
 
-  // Recycler must be VERIFIED
-  const isVerified = recyclerProfile.status === 'VERIFIED' || recyclerProfile.cpcb_status === 'VERIFIED';
+  // Recycler must be VERIFIED (case-insensitive check)
+  const profileStatus = (recyclerProfile.status || recyclerProfile.cpcb_status || '').toUpperCase();
+  const isVerified = profileStatus === 'VERIFIED';
   if (!isVerified) {
     return [];
   }
@@ -18,10 +19,21 @@ export function matchLotsToRecycler(lots = [], recyclerProfile) {
   const rawCats = recyclerProfile.categories || recyclerProfile.accepted_categories || [];
   const acceptedCats = Array.isArray(rawCats) ? rawCats : [];
 
+  const eligibleOpenStatuses = [
+    'AVAILABLE',
+    'Available',
+    'AWAITING_OFFERS',
+    'OFFERS_RECEIVED',
+    'SUBMITTED',
+    'REGISTERED',
+    'Pending Review',
+    'PENDING_REVIEW'
+  ];
+
   return lots
     .filter(lot => {
-      // Must be open for offers
-      const isLotOpen = ['AWAITING_OFFERS', 'OFFERS_RECEIVED'].includes(lot.status);
+      // Must be open for intake / offers
+      const isLotOpen = eligibleOpenStatuses.includes(lot.status) || !lot.status;
       if (!isLotOpen) return false;
 
       // Category matching

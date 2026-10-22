@@ -6,10 +6,9 @@ export const createWasteLotValidationRules = [
     .notEmpty()
     .withMessage('Category is required'),
   body('quantity')
-    .notEmpty()
-    .withMessage('Quantity is required')
+    .optional({ nullable: true, checkFalsy: true })
     .isFloat({ gt: 0 })
-    .withMessage('Quantity must be a positive number greater than 0'),
+    .withMessage('Quantity must be a positive number greater than 0 if provided'),
   body('unit')
     .optional()
     .trim(),
@@ -32,5 +31,35 @@ export const createWasteLotValidationRules = [
   body('longitude')
     .optional({ nullable: true })
     .isFloat({ min: -180, max: 180 })
-    .withMessage('Longitude must be between -180 and 180')
+    .withMessage('Longitude must be between -180 and 180'),
+  body('totalWeightKg')
+    .optional({ nullable: true, checkFalsy: true })
+    .isFloat({ gt: 0 })
+    .withMessage('Total weight must be greater than 0'),
+  body('expectedPrice')
+    .optional({ nullable: true, checkFalsy: true })
+    .isFloat({ min: 0 })
+    .withMessage('Expected selling price must be greater than or equal to 0'),
+  body('collectionAddress')
+    .optional()
+    .trim(),
+  body('cityDistrict')
+    .optional()
+    .trim(),
+  body('storageCondition')
+    .optional()
+    .trim(),
+  body('hazardousCondition')
+    .optional()
+    .trim(),
+  body('imageUrls')
+    .optional()
+    .isArray()
+    .withMessage('Image URLs must be an array'),
+  body('notes')
+    .optional()
+    .trim(),
+  body('preferredPickupDate')
+    .optional()
+    .trim()
 ];

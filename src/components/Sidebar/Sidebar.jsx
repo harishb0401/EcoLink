@@ -24,7 +24,6 @@ export default function Sidebar({ role = 'collector', userProfile }) {
     { to: '/recycler/dashboard', key: 'navDashboard', icon: LayoutDashboard },
     { to: '/recycler/waste-requests', key: 'navWasteRequests', icon: Layers },
     { to: '/recycler/transactions', key: 'navTransactions', icon: Award },
-    { to: '/recycler/compliance', key: 'navCompliance', icon: ShieldCheck },
     { to: '/recycler/profile', key: 'navProfile', icon: User },
     { to: '/recycler/notifications', key: 'navNotifications', icon: Bell },
   ];

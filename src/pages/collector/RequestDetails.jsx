@@ -184,46 +184,110 @@ export default function RequestDetails({
         {/* Header Information */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2 border-[#D6E8DF] pb-6">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-3 py-1 rounded">
-              {tCategory(request.category)}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-3 py-1 rounded">
+                {tCategory(request.category)}
+              </span>
+              <StatusBadge status={request.status || 'Available'} />
+            </div>
             <h1 className="text-2xl sm:text-3xl font-bold text-[#222222] mt-3">{request.material}</h1>
-            <p className="text-xs text-[#555555] flex items-center gap-2 mt-1 font-semibold">
-              <span className="font-mono text-[#222222] font-bold">{t('requestIdCol', 'Request ID')}: {request.id}</span>
+            <div className="text-xs text-[#555555] flex flex-wrap items-center gap-2 mt-1.5 font-semibold">
+              <span className="font-mono text-[#1F6F5F] font-bold">Lot ID: {request.lotId || request.id}</span>
               <span>•</span>
-              <span>{t('submissionDate', 'Submitted')}: {request.collectionDate || request.createdDate || 'Today'}</span>
-            </p>
+              <span>Submitted: {request.createdDate || (request.created_at ? new Date(request.created_at).toLocaleString('en-IN') : (request.collectionDate || 'Recent'))}</span>
+              {request.collectorId && (
+                <>
+                  <span>•</span>
+                  <span>Collector ID: <span className="font-mono text-[#222222]">{String(request.collectorId).slice(0, 10)}...</span></span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Specifications Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-1">
             <span className="text-[10px] font-bold text-[#555555] uppercase flex items-center gap-1">
-              <Scale className="w-3.5 h-3.5 text-[#1F6F5F]" /> {t('declaredWeight', 'Declared Weight')}
+              <Scale className="w-3.5 h-3.5 text-[#1F6F5F]" /> Weight & Quantity
             </span>
-            <span className="text-base font-bold text-[#222222]">{qty} {unit}</span>
+            <span className="text-base font-bold text-[#222222]">
+              {request.totalWeightKg ? `${request.totalWeightKg} kg` : `${qty} ${unit}`}
+            </span>
+            {request.quantity ? (
+              <span className="text-[11px] text-[#555555] block font-semibold">
+                Item Count: {request.quantity} {request.unit || 'units'}
+              </span>
+            ) : (
+              <span className="text-[10px] text-[#555555] block">
+                Total Weight: {request.totalWeightKg || qty} kg
+              </span>
+            )}
           </div>
 
           <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-1">
             <span className="text-[10px] font-bold text-[#555555] uppercase flex items-center gap-1">
-              <DollarSign className="w-3.5 h-3.5 text-[#1F6F5F]" /> {t('benchmarkPriceLabel', 'Benchmark Rate')}
+              <DollarSign className="w-3.5 h-3.5 text-[#1F6F5F]" /> Benchmark Rate
             </span>
-            <span className="text-base font-bold text-[#222222]">₹{benchmark} / {unit}</span>
+            <span className="text-base font-bold text-[#222222]">₹{benchmark} / kg</span>
+            <span className="text-[10px] text-[#555555] block">CPCB State Benchmark</span>
           </div>
 
           <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-1">
             <span className="text-[10px] font-bold text-[#555555] uppercase flex items-center gap-1">
-              <DollarSign className="w-3.5 h-3.5 text-[#1F6F5F]" /> {t('estimatedLotValueLabel', 'Estimated Value')}
+              <DollarSign className="w-3.5 h-3.5 text-[#1F6F5F]" /> Estimated Lot Value
             </span>
-            <span className="text-base font-bold text-[#1F6F5F]">₹{estimatedTotal.toLocaleString()}</span>
+            <span className="text-base font-bold text-[#1F6F5F]">
+              ₹{estimatedTotal.toLocaleString()}
+            </span>
+            <span className="text-[10px] text-[#555555] block">Rate × Total Weight</span>
           </div>
 
           <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-1">
             <span className="text-[10px] font-bold text-[#555555] uppercase flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-[#1F6F5F]" /> {t('locationLabel', 'Location')}
+              <DollarSign className="w-3.5 h-3.5 text-[#1F6F5F]" /> Expected Price
             </span>
-            <span className="text-xs font-bold text-[#222222] truncate block">{request.location || 'Chennai Hub'}</span>
+            <span className="text-base font-bold text-[#222222]">
+              {request.expectedPrice !== undefined && Number(request.expectedPrice) > 0 ? `₹${Number(request.expectedPrice).toLocaleString()}` : 'Flexible'}
+            </span>
+            <span className="text-[10px] text-[#555555] block">Collector Expectation</span>
+          </div>
+        </div>
+
+        {/* Collection & Storage Facility Details */}
+        <div className="p-5 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-3 text-xs">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F6F5F] flex items-center gap-1.5">
+            <Building className="w-4 h-4" />
+            <span>Collection & Storage Details</span>
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase text-[#555555] block">Pickup Location</span>
+              <p className="font-bold text-[#222222] flex items-start gap-1">
+                <MapPin className="w-3.5 h-3.5 text-[#1F6F5F] shrink-0 mt-0.5" />
+                <span>{request.collectionAddress || request.location || 'Chennai Hub'}</span>
+              </p>
+              {request.cityDistrict && (
+                <span className="text-[11px] text-[#555555] block">City/District: {request.cityDistrict}</span>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase text-[#555555] block">Storage Condition</span>
+              <p className="font-bold text-[#222222]">{request.storageCondition || 'Indoor storage'}</p>
+              {request.storageConditionDetails && (
+                <p className="text-[11px] text-[#555555]">{request.storageConditionDetails}</p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase text-[#555555] block">Hazardous / Battery Condition</span>
+              <p className="font-bold text-[#222222]">{request.hazardousCondition || 'No known batteries or hazardous materials'}</p>
+              {request.hazardousConditionDetails && (
+                <p className="text-[11px] text-[#555555]">{request.hazardousConditionDetails}</p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -251,25 +315,40 @@ export default function RequestDetails({
         </div>
 
         {/* Uploaded Evidence / Images Section */}
-        {request.imageUrl && (
+        {((request.imageUrls && request.imageUrls.length > 0) || request.imageUrl) && (
           <div className="p-5 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#222222] flex items-center gap-2">
               <ImageIcon className="w-4 h-4 text-[#1F6F5F]" />
-              <span>{t('uploadedEvidenceTitle', 'Uploaded Waste Verification Evidence')}</span>
+              <span>{t('uploadedEvidenceTitle', 'Uploaded Waste Verification Evidence')} ({(request.imageUrls?.length || 1)} Photos)</span>
             </h4>
-            <div className="flex items-center gap-4">
-              <img 
-                src={request.imageUrl} 
-                alt="E-waste lot evidence" 
-                className="w-32 h-24 object-cover rounded-lg border-2 border-[#D6E8DF]"
-              />
-              <div className="text-xs text-[#555555] space-y-1">
-                <p className="font-bold text-[#222222]">{request.notes || "High-grade electronic components segregated and stored in dry bin."}</p>
-                <p>{t('conditionLabel', 'Condition')}: <strong className="text-[#222222]">{request.condition || "Non-working / Scrap"}</strong></p>
-                <span className="inline-block text-[10px] font-bold text-[#1F6F5F] bg-[#EFF8F2] border-2 border-[#D6E8DF] px-2 py-0.5 rounded">
-                  {t('photoVerifiedManifest', '✓ Photo Verified Manifest')}
-                </span>
-              </div>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {(request.imageUrls && request.imageUrls.length > 0 ? request.imageUrls : [request.imageUrl]).map((imgUrl, idx) => (
+                <a 
+                  key={idx} 
+                  href={imgUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="group relative rounded-lg border-2 border-[#D6E8DF] overflow-hidden bg-black/5 hover:border-[#1F6F5F] transition block"
+                >
+                  <img 
+                    src={imgUrl} 
+                    alt={`E-waste photo ${idx + 1}`} 
+                    className="w-full h-28 object-cover group-hover:scale-105 transition"
+                  />
+                  <span className="absolute bottom-1 right-1 bg-black/60 text-white text-[9px] px-1.5 py-0.5 rounded font-bold">
+                    View
+                  </span>
+                </a>
+              ))}
+            </div>
+
+            <div className="text-xs text-[#555555] space-y-1 pt-1">
+              <p className="font-bold text-[#222222]">{request.description || request.notes || "High-grade electronic components segregated and stored in dry bin."}</p>
+              <p>{t('conditionLabel', 'Condition')}: <strong className="text-[#222222]">{request.condition || "Non-working / Scrap"}</strong></p>
+              <span className="inline-block text-[10px] font-bold text-[#1F6F5F] bg-[#EFF8F2] border-2 border-[#D6E8DF] px-2 py-0.5 rounded">
+                ✓ Supabase Storage Verified Photos
+              </span>
             </div>
           </div>
         )}

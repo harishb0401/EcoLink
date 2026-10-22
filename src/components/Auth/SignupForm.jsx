@@ -10,6 +10,7 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
   const [signupRole, setSignupRole] = useState('collector'); // 'collector' | 'recycler'
   const [fullName, setFullName] = useState('');
   const [organizationName, setOrganizationName] = useState('');
+  const [registrationNumber, setRegistrationNumber] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
@@ -24,6 +25,17 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
     if (!fullName.trim() || !signupPhone.trim() || !signupEmail.trim() || !signupPassword.trim()) {
       setErrorMessage(t('fillAllRequired') || 'Please fill out all required fields.');
       return;
+    }
+
+    if (signupRole === 'recycler') {
+      if (!organizationName.trim()) {
+        setErrorMessage('Authorized Business / Facility Name is required.');
+        return;
+      }
+      if (!registrationNumber.trim()) {
+        setErrorMessage('Official Recycler Registration Number is required.');
+        return;
+      }
     }
 
     if (signupPassword.length < 6) {
@@ -47,6 +59,9 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
         password: signupPassword,
         role: signupRole,
         organizationName: signupRole === 'recycler' ? (organizationName.trim() || fullName.trim()) : undefined,
+        facilityName: signupRole === 'recycler' ? (organizationName.trim() || fullName.trim()) : undefined,
+        registrationNumber: signupRole === 'recycler' ? registrationNumber.trim().toUpperCase() : undefined,
+        cpcbRegistrationNumber: signupRole === 'recycler' ? registrationNumber.trim().toUpperCase() : undefined,
         locationText: 'Chennai Hub'
       });
 
@@ -165,22 +180,49 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
         </div>
 
         {signupRole === 'recycler' && (
-          <div>
-            <label className="text-xs font-bold text-[#222222] block mb-1">
-              Company / Facility Name *
-            </label>
-            <div className="relative">
-              <Building className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                required
-                value={organizationName}
-                onChange={(e) => setOrganizationName(e.target.value)}
-                placeholder="Enter facility or company name"
-                className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
-              />
+          <>
+            <div>
+              <label className="text-xs font-bold text-[#222222] block mb-1">
+                Authorized Business / Facility Name *
+              </label>
+              <div className="relative">
+                <Building className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  value={organizationName}
+                  onChange={(e) => setOrganizationName(e.target.value)}
+                  placeholder="e.g. GreenTech Recyclers Pvt Ltd"
+                  className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
+                />
+              </div>
             </div>
-          </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-[#222222]">
+                  Official Recycler Registration Number *
+                </label>
+                <span className="text-[10px] text-[#1F6F5F] font-bold">
+                  Verified against Registry
+                </span>
+              </div>
+              <div className="relative">
+                <ShieldCheck className="w-4 h-4 text-[#1F6F5F] absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  required
+                  value={registrationNumber}
+                  onChange={(e) => setRegistrationNumber(e.target.value.toUpperCase())}
+                  placeholder="e.g. CPCB-TN-1374, CPCB-RECY-2026-001"
+                  className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-mono font-bold text-[#222222] placeholder:font-sans placeholder:font-normal placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none uppercase"
+                />
+              </div>
+              <p className="text-[10px] text-[#555555] mt-1">
+                Must match an authorized record maintained in the official CPCB/SPCB recycler registry.
+              </p>
+            </div>
+          </>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

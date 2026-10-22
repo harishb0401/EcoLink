@@ -1,82 +1,189 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Scale, DollarSign, CheckCircle2, XCircle, 
-  AlertTriangle, Calculator, ShieldCheck, TrendingDown, 
-  TrendingUp, RefreshCw, HelpCircle, Info, MapPin, Loader2, Navigation, Clock
+  AlertTriangle, ShieldCheck, RefreshCw, MapPin, Loader2, 
+  Navigation, Clock, Upload, Trash2, Image as ImageIcon, 
+  Calendar, AlertOctagon, Box, FileText, Info
 } from 'lucide-react';
 import { structuredEWasteCategories } from '../../data/scrapPrices';
 import { calculateFairPriceRange } from '../../utils/rulesEngine';
 import { mockBenchmarkPrices } from '../../data/mockData';
 import { validateQuotedPriceBackend } from '../../services/pricingService';
+import wasteService from '../../services/wasteService';
 import { useTranslation } from '../../i18n';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { getCategoryPrice, getCachedSafetyGuidance } from '../../services/offline/offlineContentService';
 
-export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, onLotCreated, collectorProfile = null }) {
+export default function RegisterWaste({ 
+  benchmarkPrices = mockBenchmarkPrices, 
+  onLotCreated, 
+  collectorProfile = null 
+}) {
   const navigate = useNavigate();
   const { t, tCategory, tCondition } = useTranslation();
   const { online } = useOnlineStatus();
+  const fileInputRef = useRef(null);
 
+  // ==========================================
+  // SECTION 1: WASTE INFORMATION STATE
+  // ==========================================
+  // 1. Waste Category / Item Type
   const [category, setCategory] = useState(structuredEWasteCategories[0].name);
+  const [categoryOther, setCategoryOther] = useState('');
+  
+  // 2. Waste Description
+  const [description, setDescription] = useState('');
   const [material, setMaterial] = useState(structuredEWasteCategories[0].description || structuredEWasteCategories[0].name);
-  const [quantity, setQuantity] = useState('25');
-  const [unit, setUnit] = useState('kg');
-  const [condition, setCondition] = useState('Non-working / Scrap');
-  const [location, setLocation] = useState(collectorProfile?.location || collectorProfile?.address || '');
+
+  // 3. Quantity (Optional - not compulsory)
+  const [quantity, setQuantity] = useState('');
+
+  // 4. Unit (Pieces, Kilograms, Boxes, Lots)
+  const [unit, setUnit] = useState('Pieces');
+
+  // 5. Total Weight (kg) - Separate from quantity
+  const [totalWeightKg, setTotalWeightKg] = useState('25');
+
+  // 6. Waste Condition (Working, Partially Working, Damaged, Non-functional, Mixed)
+  const [condition, setCondition] = useState('Non-functional');
+
+  // ==========================================
+  // SECTION 2: COLLECTION AND STORAGE DETAILS
+  // ==========================================
+  // 8. Collection Address
+  const [collectionAddress, setCollectionAddress] = useState(
+    collectorProfile?.address || collectorProfile?.location || ''
+  );
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationSuccess, setLocationSuccess] = useState('');
-  const [collectionDate, setCollectionDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // 9. City / District
+  const [cityDistrict, setCityDistrict] = useState(
+    collectorProfile?.city || collectorProfile?.district || 'Chennai'
+  );
+
+  // 10. Storage Condition
+  const [storageCondition, setStorageCondition] = useState('Indoor storage');
+  const [storageConditionDetails, setStorageConditionDetails] = useState('');
+
+  // 11. Battery / Hazardous Material Condition
+  const [hazardousCondition, setHazardousCondition] = useState('No known batteries or hazardous materials');
+  const [hazardousConditionDetails, setHazardousConditionDetails] = useState('');
+
+  // ==========================================
+  // SECTION 3: PRICING AND PICKUP DETAILS
+  // ==========================================
+  // 12. Expected Selling Price (₹)
+  const [expectedPrice, setExpectedPrice] = useState('8750');
+  const [isCustomPrice, setIsCustomPrice] = useState(false);
+
+  // 13. Preferred Pickup Date / Time
+  const getMinDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  };
+  const getDefaultDateTime = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+    return tomorrow.toISOString().slice(0, 16);
+  };
+  const [preferredPickupDate, setPreferredPickupDate] = useState(getDefaultDateTime());
+
+  // ==========================================
+  // SECTION 4: IMAGES AND ADDITIONAL NOTES
+  // ==========================================
+  // 7. Waste Images / Photos
+  const [images, setImages] = useState([]); // Array of { id, url, name, size, isUploading, error }
+  const [imageUploadError, setImageUploadError] = useState('');
+
+  // 14. Additional Notes
   const [notes, setNotes] = useState('');
+
+  // ==========================================
+  // SUBMISSION & VALIDATION STATES
+  // ==========================================
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [offlinePriceInfo, setOfflinePriceInfo] = useState({ isOffline: false, lastUpdated: null });
   const [safetyGuidance, setSafetyGuidance] = useState(null);
   const [showSafetyGuide, setShowSafetyGuide] = useState(false);
 
-  // Load offline cached prices and safety guidelines
-  useEffect(() => {
-    getCategoryPrice(category).then(info => {
-      setOfflinePriceInfo(info);
-    });
-    getCachedSafetyGuidance(category).then(guide => {
-      setSafetyGuidance(guide);
-    });
-  }, [category, online]);
-
   // Selected Category Benchmark & Tolerance
+  const isOtherCategory = category === 'Other';
   const selectedCatData = structuredEWasteCategories.find(c => c.name === category);
-  const benchmarkRate = (benchmarkPrices || []).find(p => p.category === category)?.referencePrice || selectedCatData?.benchmarkPrice || 350;
-  const tolerance = (benchmarkPrices || []).find(p => p.category === category)?.tolerancePercent !== undefined 
-    ? (benchmarkPrices || []).find(p => p.category === category).tolerancePercent 
-    : (selectedCatData?.tolerance ? selectedCatData.tolerance * 100 : 25);
+  const benchmarkRate = isOtherCategory 
+    ? 250 
+    : ((benchmarkPrices || []).find(p => p.category === category)?.referencePrice || selectedCatData?.benchmarkPrice || 350);
+  const tolerance = isOtherCategory 
+    ? 25 
+    : ((benchmarkPrices || []).find(p => p.category === category)?.tolerancePercent !== undefined 
+      ? (benchmarkPrices || []).find(p => p.category === category).tolerancePercent 
+      : (selectedCatData?.tolerance ? selectedCatData.tolerance * 100 : 25));
 
-  // Recycler Quoted Price state
-  const [quotedPrice, setQuotedPrice] = useState(String(benchmarkRate));
-  const [isCustomQuote, setIsCustomQuote] = useState(false);
-
-  // Backend validation response state
+  // Backend pricing validation state
   const [backendValidation, setBackendValidation] = useState(null);
   const [isValidating, setIsValidating] = useState(false);
 
-  // When category changes, if user hasn't explicitly set custom quote, update to new category benchmark
+  // Load offline cached prices and safety guidelines
+  useEffect(() => {
+    if (!isOtherCategory) {
+      getCategoryPrice(category).then(info => {
+        setOfflinePriceInfo(info);
+      });
+      getCachedSafetyGuidance(category).then(guide => {
+        setSafetyGuidance(guide);
+      });
+    }
+  }, [category, online, isOtherCategory]);
+
+  // Handle Category Change
   const handleCategoryChange = (newCat) => {
     setCategory(newCat);
-    const matched = structuredEWasteCategories.find(c => c.name === newCat);
-    if (matched) {
-      setMaterial(matched.description || matched.name);
-      const newBenchmark = (benchmarkPrices || []).find(p => p.category === newCat)?.referencePrice || matched.benchmarkPrice || 350;
-      if (!isCustomQuote) {
-        setQuotedPrice(String(newBenchmark));
+    if (newCat === 'Other') {
+      setMaterial('Custom / Other E-Waste Stream');
+    } else {
+      const matched = structuredEWasteCategories.find(c => c.name === newCat);
+      if (matched) {
+        setMaterial(matched.description || matched.name);
+        const newBenchmark = (benchmarkPrices || []).find(p => p.category === newCat)?.referencePrice || matched.benchmarkPrice || 350;
+        if (!isCustomPrice) {
+          const w = parseFloat(totalWeightKg) || 1;
+          setExpectedPrice(String(Math.round(newBenchmark * w)));
+        }
       }
+    }
+  };
+
+  // Quantity Change Handler - Completely separate from Total Weight
+  const handleQuantityChange = (val) => {
+    setQuantity(val);
+  };
+
+  // Unit Change Handler - Completely separate from Total Weight
+  const handleUnitChange = (newUnit) => {
+    setUnit(newUnit);
+  };
+
+  // Total Weight Change Handler - Completely separate from Quantity
+  const handleWeightChange = (val) => {
+    setTotalWeightKg(val);
+    if (!isCustomPrice) {
+      const num = parseFloat(val) || 0;
+      setExpectedPrice(String(Math.round(benchmarkRate * num)));
     }
   };
 
   // Geolocation detector
   const handleDetectLocation = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser. Please enter location manually.");
+      alert("Geolocation is not supported by your browser. Please enter address manually.");
       return;
     }
 
@@ -89,43 +196,110 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
         const lon = pos.coords.longitude;
         setLatitude(lat);
         setLongitude(lon);
-        setLocationSuccess(`GPS coordinates detected: ${lat.toFixed(4)}, ${lon.toFixed(4)}`);
-        setLocation(`Chennai Hub (${lat.toFixed(3)}°N, ${lon.toFixed(3)}°E)`);
+        setLocationSuccess(`GPS detected: ${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E`);
+        if (!collectionAddress) {
+          setCollectionAddress(`Pickup Hub (${lat.toFixed(4)}°N, ${lon.toFixed(4)}°E)`);
+        }
         setIsLocating(false);
       },
       (err) => {
         console.warn('Geolocation error:', err.message);
-        alert('Could not access GPS location. You can continue by entering your location manually.');
+        alert('Could not access GPS location. Please type your collection address manually.');
         setIsLocating(false);
       },
       { timeout: 10000, enableHighAccuracy: true }
     );
   };
 
-  // Trigger backend validation asynchronously on input changes
+  // Image Upload Handlers
+  const handleImageSelect = async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+
+    setImageUploadError('');
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type.toLowerCase())) {
+        setImageUploadError('Invalid file type. Only JPG, JPEG, PNG, and WEBP images are supported.');
+        continue;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        setImageUploadError(`File "${file.name}" exceeds the 5MB size limit.`);
+        continue;
+      }
+
+      const tempId = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      const previewUrl = URL.createObjectURL(file);
+
+      // Add to list with uploading status
+      setImages(prev => [...prev, {
+        id: tempId,
+        file,
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2),
+        url: previewUrl,
+        isUploading: true,
+        error: null
+      }]);
+
+      try {
+        const uploadRes = await wasteService.uploadImage(file);
+        setImages(prev => prev.map(img => 
+          img.id === tempId ? {
+            ...img,
+            url: uploadRes.url || previewUrl,
+            storagePath: uploadRes.path,
+            isUploading: false
+          } : img
+        ));
+      } catch (err) {
+        console.error('Image upload failed:', err);
+        setImages(prev => prev.map(img => 
+          img.id === tempId ? {
+            ...img,
+            isUploading: false,
+            error: 'Upload to Supabase Storage failed. Will use offline preview.'
+          } : img
+        ));
+      }
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = (imgId) => {
+    setImages(prev => prev.filter(img => img.id !== imgId));
+  };
+
+  // Fair price calculations & backend pricing validation
+  const parsedWeight = parseFloat(totalWeightKg) || 0;
+  const parsedPrice = parseFloat(expectedPrice) || 0;
+  const unitRate = parsedWeight > 0 ? (parsedPrice / parsedWeight) : benchmarkRate;
+
   useEffect(() => {
     let isCurrent = true;
     setIsValidating(true);
 
-    const parsedQty = parseFloat(quantity) || 0;
-    const parsedQuote = parseFloat(quotedPrice) || 0;
     const tolFraction = tolerance > 1 ? tolerance / 100 : tolerance;
 
     validateQuotedPriceBackend({
-      category,
-      material: (material || '').trim() || category,
-      lotWeight: parsedQty,
-      quotedPrice: parsedQuote,
+      category: isOtherCategory ? (categoryOther || 'Other E-Waste') : category,
+      material: (description || material || '').trim() || category,
+      lotWeight: parsedWeight,
+      quotedPrice: unitRate,
       benchmarkPrice: benchmarkRate,
       tolerance: tolFraction,
-      unit
+      unit: 'kg'
     }).then((res) => {
       if (isCurrent) {
         setBackendValidation(res);
         setIsValidating(false);
       }
     }).catch((err) => {
-      console.error('Pricing validation error:', err);
       if (isCurrent) {
         setIsValidating(false);
       }
@@ -134,82 +308,121 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
     return () => {
       isCurrent = false;
     };
-  }, [category, material, quantity, quotedPrice, benchmarkRate, tolerance, unit]);
+  }, [category, categoryOther, isOtherCategory, description, material, parsedWeight, unitRate, benchmarkRate, tolerance]);
 
-  // Fallback calculations in case backend response is still loading
-  const parsedQty = parseFloat(quantity) || 0;
-  const parsedQuote = parseFloat(quotedPrice) || 0;
-  const fallbackRange = calculateFairPriceRange(benchmarkRate, tolerance > 1 ? tolerance / 100 : tolerance, parsedQty);
-  
+  const fallbackRange = calculateFairPriceRange(benchmarkRate, tolerance > 1 ? tolerance / 100 : tolerance, parsedWeight);
   const minPrice = backendValidation?.allowedPriceRange?.minPrice ?? fallbackRange.lowerLimit;
   const maxPrice = backendValidation?.allowedPriceRange?.maxPrice ?? fallbackRange.upperLimit;
   const displayBenchmark = backendValidation?.benchmarkRate ?? benchmarkRate;
   const displayTolerance = backendValidation?.tolerancePercent ?? Math.round(tolerance);
-  const estimatedTotalAmount = backendValidation?.estimatedTotalAmount ?? Math.round(parsedQty * parsedQuote);
-  
-  const validation = backendValidation?.validation || {
-    isCleared: parsedQuote >= minPrice && parsedQuote <= maxPrice,
-    status: parsedQuote < minPrice ? 'NOT_CLEARED_BELOW' : parsedQuote > maxPrice ? 'NOT_CLEARED_ABOVE' : 'PRE_CLEARED',
-    badgeText: (parsedQuote >= minPrice && parsedQuote <= maxPrice) ? 'PRE-CLEARED ✅' : 'NOT CLEARED ❌',
-    position: parsedQuote < minPrice ? 'BELOW_RANGE' : parsedQuote > maxPrice ? 'ABOVE_RANGE' : 'IN_RANGE',
-    diffPercent: parsedQuote < minPrice && minPrice > 0 ? Math.round(((minPrice - parsedQuote) / minPrice) * 100) : (parsedQuote > maxPrice && maxPrice > 0 ? Math.round(((parsedQuote - maxPrice) / maxPrice) * 100) : 0),
-    message: parsedQuote < minPrice 
-      ? `Quoted price (₹${parsedQuote}/${unit}) is BELOW the allowed fair range (₹${minPrice} – ₹${maxPrice}/${unit}).`
-      : parsedQuote > maxPrice
-        ? `Quoted price (₹${parsedQuote}/${unit}) is ABOVE the allowed fair range (₹${minPrice} – ₹${maxPrice}/${unit}).`
-        : `Quoted price (₹${parsedQuote}/${unit}) is within the allowed fair benchmark range (₹${minPrice} – ₹${maxPrice}/${unit}).`
-  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!parsedQty || parsedQty <= 0) {
-      alert("Please enter a valid positive quantity / lot weight.");
-      return;
+  const minTotalVal = Math.round(minPrice * parsedWeight);
+  const maxTotalVal = Math.round(maxPrice * parsedWeight);
+  const isPriceCleared = parsedPrice >= minTotalVal && parsedPrice <= maxTotalVal;
+
+  // Validation function
+  const validateForm = () => {
+    const errors = {};
+    if (isOtherCategory && !categoryOther.trim()) {
+      errors.categoryOther = 'Please specify the custom e-waste item type.';
+    }
+    if (!description.trim()) {
+      errors.description = 'Please provide a waste description with item details.';
+    }
+    // Quantity is optional (not compulsory)
+    if (quantity !== undefined && quantity !== null && String(quantity).trim() !== '') {
+      const q = parseFloat(quantity);
+      if (isNaN(q) || q <= 0) {
+        errors.quantity = 'Quantity must be a positive number greater than 0 if provided.';
+      }
+    }
+    const w = parseFloat(totalWeightKg);
+    if (!w || w <= 0) {
+      errors.totalWeightKg = 'Total weight is required and must be greater than 0 kg.';
+    }
+    if (!collectionAddress.trim()) {
+      errors.collectionAddress = 'Collection pickup address is required.';
+    }
+    if (!cityDistrict.trim()) {
+      errors.cityDistrict = 'City / District is required.';
+    }
+    const p = parseFloat(expectedPrice);
+    if (isNaN(p) || p < 0) {
+      errors.expectedPrice = 'Expected selling price cannot be negative.';
+    }
+    if (!preferredPickupDate) {
+      errors.preferredPickupDate = 'Please select a preferred pickup date and time.';
     }
 
-    if (!parsedQuote || parsedQuote <= 0) {
-      alert("Please enter a valid positive recycler quoted price.");
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Submit Handler
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitError('');
+
+    if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      if (onLotCreated) {
-        await onLotCreated({
-          category,
-          material: (material || '').trim() || category,
-          quantity: parsedQty,
-          totalWeightKg: parsedQty,
-          unit,
-          condition,
-          location,
-          latitude,
-          longitude,
-          collectionDate,
-          notes,
-          benchmarkPrice: displayBenchmark,
-          quotedPrice: parsedQuote,
-          estimatedLotValue: estimatedTotalAmount,
-          isPreCleared: validation.isCleared,
-          clearanceBadge: validation.badgeText,
-          clearanceStatus: validation.status,
-          allowedPriceRange: {
-            minPrice,
-            maxPrice,
-            rangeLabel: `₹${minPrice} – ₹${maxPrice} / ${unit}`
-          },
-          validationDetails: validation
-        });
+      const finalCategory = isOtherCategory ? `Other: ${categoryOther.trim()}` : category;
+      const imageUrlsList = images.map(img => img.url);
+      const parsedQty = (quantity !== undefined && quantity !== null && String(quantity).trim() !== '')
+        ? parseFloat(quantity)
+        : null;
 
-        if (!online) {
-          alert("Saved offline. It will sync automatically when internet connection returns.");
+      const payload = {
+        category: finalCategory,
+        categoryOther: isOtherCategory ? categoryOther.trim() : null,
+        description: description.trim(),
+        material: (description || material || '').trim(),
+        quantity: parsedQty,
+        unit,
+        totalWeightKg: parseFloat(totalWeightKg),
+        condition,
+        imageUrls: imageUrlsList,
+        collectionAddress: collectionAddress.trim(),
+        cityDistrict: cityDistrict.trim(),
+        location: collectionAddress.trim(),
+        latitude,
+        longitude,
+        storageCondition,
+        storageConditionDetails: storageConditionDetails.trim(),
+        hazardousCondition,
+        hazardousConditionDetails: hazardousConditionDetails.trim(),
+        expectedPrice: parseFloat(expectedPrice),
+        quotedPrice: unitRate,
+        benchmarkPrice: displayBenchmark,
+        preferredPickupDate,
+        collectionDate: preferredPickupDate.split('T')[0],
+        notes: notes.trim(),
+        estimatedLotValue: parseFloat(expectedPrice) || Math.round(displayBenchmark * parseFloat(totalWeightKg)),
+        isPreCleared: isPriceCleared,
+        clearanceBadge: isPriceCleared ? 'PRE-CLEARED ✅' : 'NOT CLEARED ❌',
+        allowedPriceRange: {
+          minPrice,
+          maxPrice,
+          minTotalVal,
+          maxTotalVal,
+          rangeLabel: `₹${minPrice} – ₹${maxPrice} / kg`
         }
+      };
+
+      if (onLotCreated) {
+        await onLotCreated(payload);
+      } else {
+        await wasteService.createLot(payload);
       }
 
       navigate('/collector/requests');
     } catch (err) {
-      alert(err.message || "Failed to create waste lot. Please try again.");
+      console.error('Submission failed:', err);
+      setSubmitError(err.message || 'Failed to register e-waste manifest. Please check your data and retry.');
     } finally {
       setIsSubmitting(false);
     }
@@ -217,7 +430,7 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto bg-white text-[#222222]">
-      {/* Back Button */}
+      {/* Back Navigation */}
       <div className="flex items-center justify-between">
         <button
           onClick={() => navigate('/collector/dashboard')}
@@ -228,105 +441,204 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
         </button>
       </div>
 
-      {/* Form Card */}
-      <div className="bg-[#F5FBF7] p-6 sm:p-10 rounded-lg border-2 border-[#D6E8DF] space-y-6">
+      {/* Main Container Card */}
+      <div className="bg-[#F5FBF7] p-6 sm:p-10 rounded-lg border-2 border-[#D6E8DF] space-y-8">
         <div>
           <span className="text-[10px] font-bold uppercase text-[#1F6F5F] tracking-widest bg-white border-2 border-[#D6E8DF] px-3 py-1 rounded">
-            {t('pricingAndValidationEngine', 'E-Waste Manifest & Fair Pricing Engine')}
+            {t('pricingAndValidationEngine', 'E-Waste Manifest & Supabase Integration')}
           </span>
-          <h1 className="text-2xl sm:text-3xl font-bold text-[#222222] mt-3">{t('createEWasteRequest', 'Create E-Waste Request')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#222222] mt-3">
+            {t('collectorWasteRegistration', 'Collector E-Waste Registration')}
+          </h1>
           <p className="text-xs sm:text-sm text-[#555555] mt-1">
-            {t('eWasteManifestSubtitle', 'Declare your collected e-waste volume, evaluate recycler quoted rates with automated backend pricing validation, and broadcast requests to certified CPCB recyclers.')}
+            Register e-waste batches with complete specifications, upload verification photos to Supabase Storage, and evaluate fair benchmark pricing.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Row 1: Category and Material */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {submitError && (
+          <div className="p-4 bg-red-50 border-2 border-red-200 text-red-800 rounded-lg text-xs font-bold flex items-start gap-2">
+            <AlertOctagon className="w-4 h-4 shrink-0 text-red-600 mt-0.5" />
             <div>
-              <label className="text-xs font-bold text-[#222222] block mb-1">
-                {t('eWasteCategory', 'E-Waste Category')} *
-              </label>
-              <select
-                value={category}
-                onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
-              >
-                {structuredEWasteCategories.map((c, i) => (
-                  <option key={i} value={c.name}>{tCategory(c.name)}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-[#222222] block mb-1">
-                {t('materialDescription', 'Material Description / Material Type')} *
-              </label>
-              <input
-                type="text"
-                required
-                value={material}
-                onChange={(e) => setMaterial(e.target.value)}
-                placeholder="e.g. Mixed motherboards & server boards"
-                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
-              />
+              <p className="font-bold">Registration Failed</p>
+              <p className="font-normal text-[11px] text-red-700">{submitError}</p>
             </div>
           </div>
+        )}
 
-          {/* Row 2: Lot Weight / Quantity, Unit, Condition */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <form onSubmit={handleSubmit} className="space-y-8">
+
+          {/* ======================================================== */}
+          {/* SECTION 1: WASTE INFORMATION */}
+          {/* ======================================================== */}
+          <div className="bg-white p-6 rounded-lg border-2 border-[#D6E8DF] space-y-5">
+            <div className="flex items-center gap-2 border-b-2 border-[#D6E8DF] pb-3">
+              <span className="w-6 h-6 rounded-full bg-[#1F6F5F] text-white flex items-center justify-center text-xs font-bold">1</span>
+              <h2 className="text-base font-bold text-[#222222]">Waste Information</h2>
+            </div>
+
+            {/* 1. Category & Other */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-[#222222] block mb-1">
+                  Waste Category / Item Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => handleCategoryChange(e.target.value)}
+                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                >
+                  {structuredEWasteCategories.map((c, i) => (
+                    <option key={i} value={c.name}>{tCategory(c.name)}</option>
+                  ))}
+                  <option value="Other">Other (Specify Custom Item Type)</option>
+                </select>
+              </div>
+
+              {isOtherCategory ? (
+                <div>
+                  <label className="text-xs font-bold text-[#222222] block mb-1">
+                    Specify Custom Item Type <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryOther}
+                    onChange={(e) => setCategoryOther(e.target.value)}
+                    placeholder="e.g. Telecom Satellite Transceivers"
+                    className={`w-full bg-white border-2 ${fieldErrors.categoryOther ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
+                  />
+                  {fieldErrors.categoryOther && (
+                    <p className="text-[11px] text-red-600 mt-1">{fieldErrors.categoryOther}</p>
+                  )}
+                </div>
+              ) : (
+                <div>
+                  <label className="text-xs font-bold text-[#222222] block mb-1">
+                    Standard Material Reference
+                  </label>
+                  <input
+                    type="text"
+                    disabled
+                    value={material}
+                    className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#555555]"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 2. Waste Description */}
             <div>
               <label className="text-xs font-bold text-[#222222] block mb-1">
-                {t('lotWeight', 'Lot Weight (Quantity)')} *
+                Waste Description <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
-                min="0.1"
-                step="any"
-                required
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+              <textarea
+                rows="3"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe electronic items, brand, model, quantity breakdown, intactness, and key components..."
+                className={`w-full bg-white border-2 ${fieldErrors.description ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg p-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
               />
+              {fieldErrors.description && (
+                <p className="text-[11px] text-red-600 mt-1">{fieldErrors.description}</p>
+              )}
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-[#222222] block mb-1">
-                {t('unitOfMeasurement', 'Unit of Measurement')}
-              </label>
-              <select
-                value={unit}
-                onChange={(e) => setUnit(e.target.value)}
-                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
-              >
-                <option value="kg">{t('unitKg', 'Kilograms (kg)')}</option>
-                <option value="units">{t('unitUnits', 'Units / Pieces')}</option>
-                <option value="tons">{t('unitTons', 'Metric Tons (MT)')}</option>
-              </select>
+            {/* 3, 4, 5: Quantity (Optional), Unit, Total Weight (kg) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-bold text-[#222222] block mb-1">
+                  Quantity <span className="text-[11px] font-normal text-[#555555]">(Optional)</span>
+                </label>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  value={quantity}
+                  onChange={(e) => handleQuantityChange(e.target.value)}
+                  placeholder="e.g. 10 (optional count)"
+                  className={`w-full bg-white border-2 ${fieldErrors.quantity ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
+                />
+                {fieldErrors.quantity && (
+                  <p className="text-[11px] text-red-600 mt-1">{fieldErrors.quantity}</p>
+                )}
+                <p className="text-[10px] text-[#555555] mt-1">
+                  Item count if known. Not compulsory.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#222222] block mb-1">
+                  Unit <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={unit}
+                  onChange={(e) => handleUnitChange(e.target.value)}
+                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                >
+                  <option value="Pieces">Pieces</option>
+                  <option value="Kilograms">Kilograms</option>
+                  <option value="Boxes">Boxes</option>
+                  <option value="Lots">Lots</option>
+                </select>
+                <p className="text-[10px] text-[#555555] mt-1">
+                  Packaging/packaging unit type.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#222222] block mb-1">
+                  Total Weight (kg) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  min="0.01"
+                  step="any"
+                  value={totalWeightKg}
+                  onChange={(e) => handleWeightChange(e.target.value)}
+                  placeholder="e.g. 25.5"
+                  className={`w-full bg-white border-2 ${fieldErrors.totalWeightKg ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
+                />
+                {fieldErrors.totalWeightKg && (
+                  <p className="text-[11px] text-red-600 mt-1">{fieldErrors.totalWeightKg}</p>
+                )}
+                <p className="text-[10px] text-[#555555] mt-1">
+                  Required total net weight in kilograms.
+                </p>
+              </div>
             </div>
 
+            {/* 6. Waste Condition */}
             <div>
               <label className="text-xs font-bold text-[#222222] block mb-1">
-                {t('conditionLabel', 'Condition')}
+                Waste Condition <span className="text-red-500">*</span>
               </label>
               <select
                 value={condition}
                 onChange={(e) => setCondition(e.target.value)}
                 className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
               >
-                <option value="Non-working / Scrap">{tCondition('Non-working / Scrap')}</option>
-                <option value="Intact / Used">{tCondition('Working / Repairable')}</option>
-                <option value="Partially Dismantled">{tCondition('Mixed Condition')}</option>
+                <option value="Working">Working</option>
+                <option value="Partially Working">Partially Working</option>
+                <option value="Damaged">Damaged</option>
+                <option value="Non-functional">Non-functional</option>
+                <option value="Mixed">Mixed</option>
               </select>
             </div>
           </div>
 
-          {/* Row 3: Location (with GPS Detect) and Collection Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* ======================================================== */}
+          {/* SECTION 2: COLLECTION AND STORAGE DETAILS */}
+          {/* ======================================================== */}
+          <div className="bg-white p-6 rounded-lg border-2 border-[#D6E8DF] space-y-5">
+            <div className="flex items-center gap-2 border-b-2 border-[#D6E8DF] pb-3">
+              <span className="w-6 h-6 rounded-full bg-[#1F6F5F] text-white flex items-center justify-center text-xs font-bold">2</span>
+              <h2 className="text-base font-bold text-[#222222]">Collection and Storage Details</h2>
+            </div>
+
+            {/* 8. Collection Address with GPS */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-xs font-bold text-[#222222]">
-                  {t('storageLocationHub', 'Storage Location / Hub')} *
+                  Collection Pickup Address <span className="text-red-500">*</span>
                 </label>
                 <button
                   type="button"
@@ -337,23 +649,22 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
                   {isLocating ? (
                     <>
                       <Loader2 className="w-3 h-3 animate-spin" />
-                      <span>{t('detectingGps', 'Detecting GPS...')}</span>
+                      <span>Detecting GPS...</span>
                     </>
                   ) : (
                     <>
                       <Navigation className="w-3 h-3" />
-                      <span>{t('detectMyLocation', 'Detect My Location')}</span>
+                      <span>Auto-detect GPS Location</span>
                     </>
                   )}
                 </button>
               </div>
-              <input
-                type="text"
-                required
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder={t('placeholderLocation')}
-                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+              <textarea
+                rows="2"
+                value={collectionAddress}
+                onChange={(e) => setCollectionAddress(e.target.value)}
+                placeholder="Full street address, building/plot number, loading dock, landmark..."
+                className={`w-full bg-white border-2 ${fieldErrors.collectionAddress ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg p-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
               />
               {locationSuccess && (
                 <p className="text-[10px] font-bold text-[#1F6F5F] mt-1 flex items-center gap-1">
@@ -361,288 +672,326 @@ export default function RegisterWaste({ benchmarkPrices = mockBenchmarkPrices, o
                   <span>{locationSuccess}</span>
                 </p>
               )}
+              {fieldErrors.collectionAddress && (
+                <p className="text-[11px] text-red-600 mt-1">{fieldErrors.collectionAddress}</p>
+              )}
             </div>
 
+            {/* 9. City / District */}
             <div>
               <label className="text-xs font-bold text-[#222222] block mb-1">
-                {t('collectionDate', 'Collection Date')} *
+                City / District <span className="text-red-500">*</span>
               </label>
               <input
-                type="date"
-                required
-                value={collectionDate}
-                onChange={(e) => setCollectionDate(e.target.value)}
-                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                type="text"
+                value={cityDistrict}
+                onChange={(e) => setCityDistrict(e.target.value)}
+                placeholder="e.g. Chennai, Coimbatore, Kanchipuram"
+                className={`w-full bg-white border-2 ${fieldErrors.cityDistrict ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
               />
+              {fieldErrors.cityDistrict && (
+                <p className="text-[11px] text-red-600 mt-1">{fieldErrors.cityDistrict}</p>
+              )}
+            </div>
+
+            {/* 10. Storage Condition */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-bold text-[#222222] block mb-1">
+                  Storage Condition <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={storageCondition}
+                  onChange={(e) => setStorageCondition(e.target.value)}
+                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                >
+                  <option value="Indoor storage">Indoor storage</option>
+                  <option value="Outdoor storage">Outdoor storage</option>
+                  <option value="Covered storage">Covered storage</option>
+                  <option value="Uncovered storage">Uncovered storage</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#222222] block mb-1">
+                  Storage Facility Details (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={storageConditionDetails}
+                  onChange={(e) => setStorageConditionDetails(e.target.value)}
+                  placeholder="e.g. Ventilated warehouse shelf, palletized, dry bin"
+                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {/* 11. Battery / Hazardous Material Condition */}
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-[#222222] block">
+                Battery / Hazardous Material Condition <span className="text-red-500">*</span>
+              </label>
+              <select
+                value={hazardousCondition}
+                onChange={(e) => setHazardousCondition(e.target.value)}
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+              >
+                <option value="No known batteries or hazardous materials">No known batteries or hazardous materials</option>
+                <option value="Batteries present and intact">Batteries present and intact</option>
+                <option value="Damaged or leaking batteries">Damaged or leaking batteries</option>
+                <option value="Other hazardous materials present">Other hazardous materials present</option>
+                <option value="Unknown">Unknown</option>
+              </select>
+
+              <input
+                type="text"
+                value={hazardousConditionDetails}
+                onChange={(e) => setHazardousConditionDetails(e.target.value)}
+                placeholder="Specific hazardous details (e.g., Li-ion battery packs intact, lead acid caps sealed, capacitor fluid)..."
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-2.5 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+              />
+
+              {/* Regulatory disclaimer box */}
+              <div className="p-3 bg-[#EFF8F2] border-2 border-[#D6E8DF] rounded-lg text-[11px] text-[#555555] flex items-start gap-2">
+                <Info className="w-4 h-4 text-[#1F6F5F] shrink-0 mt-0.5" />
+                <p>
+                  <strong className="text-[#222222]">Safety Protocol Notice:</strong> Stating "Unknown" or unverified declarations does not certify that the waste is free of hazardous substances. All batches undergo physical manifest verification by certified CPCB recyclers prior to loading.
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* QUOTED AMOUNT & LIVE BACKEND PRICING VALIDATION */}
-          <div className="p-6 sm:p-7 bg-[#EFF8F2] rounded-lg border-2 border-[#D6E8DF] space-y-5">
-            {/* Section Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-[#D6E8DF] pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] flex items-center justify-center font-bold">
-                  <DollarSign className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#1F6F5F]">
-                    {t('pricingAndValidationEngine', 'Pricing & Validation Engine')}
-                  </span>
-                  <h3 className="text-base font-bold text-[#222222]">
-                    {t('quotedAmountSection', 'Quoted Amount')}
-                  </h3>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                {isValidating && (
-                  <span className="text-[11px] font-bold text-[#1F6F5F] flex items-center gap-1 bg-white border-2 border-[#D6E8DF] px-2.5 py-1 rounded">
-                    <RefreshCw className="w-3 h-3 animate-spin" />
-                    {t('validatingWithBackend', 'Validating with Backend...')}
-                  </span>
-                )}
-                <span className="text-[10px] font-bold uppercase text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] px-2.5 py-1 rounded">
-                  {t('toleranceLabel', 'Tolerance')}: ±{displayTolerance}%
-                </span>
-              </div>
+          {/* ======================================================== */}
+          {/* SECTION 3: PRICING AND PICKUP SCHEDULE */}
+          {/* ======================================================== */}
+          <div className="bg-white p-6 rounded-lg border-2 border-[#D6E8DF] space-y-5">
+            <div className="flex items-center gap-2 border-b-2 border-[#D6E8DF] pb-3">
+              <span className="w-6 h-6 rounded-full bg-[#1F6F5F] text-white flex items-center justify-center text-xs font-bold">3</span>
+              <h2 className="text-base font-bold text-[#222222]">Pricing and Pickup Schedule</h2>
             </div>
 
-            {/* Offline Price Badge */}
-            {!online && (
-              <div className="p-3 bg-white border-2 border-[#D6E8DF] rounded-lg text-xs font-bold text-[#222222] flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-[#555555] shrink-0" />
-                  <span>Offline price — last updated: {offlinePriceInfo.lastUpdated || 'Initial Baseline'}</span>
+            {/* 12. Expected Selling Price & Benchmark */}
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <label className="text-xs font-bold text-[#222222] block">
+                    Collector's Expected Selling Price (₹) <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-[11px] text-[#555555]">
+                    Enter your total expected selling price for the whole batch. (Enter 0 if open to market bids).
+                  </p>
                 </div>
-                <span className="text-[10px] font-bold uppercase bg-white border-2 border-[#D6E8DF] text-[#555555] px-2 py-0.5 rounded self-start sm:self-auto">
-                  IndexedDB Cached Rate
-                </span>
-              </div>
-            )}
-
-            {/* Cached Safety Guidance Box */}
-            {safetyGuidance && (
-              <div className="p-4 bg-white border-2 border-[#D6E8DF] rounded-lg space-y-2 text-xs">
-                <div 
-                  className="flex items-center justify-between cursor-pointer select-none"
-                  onClick={() => setShowSafetyGuide(!showSafetyGuide)}
-                >
-                  <span className="font-bold text-[#222222] flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
-                    <span>Safety Protocols for {category} (Offline Cached)</span>
-                  </span>
-                  <span className="text-[11px] font-bold text-[#1F6F5F] hover:underline">
-                    {showSafetyGuide ? '▲ Hide' : '▼ View Safety Guidance'}
-                  </span>
-                </div>
-
-                {showSafetyGuide && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-[11px]">
-                    <div className="bg-white p-3 rounded-lg border-2 border-[#D6E8DF] space-y-1">
-                      <strong className="text-[#1F6F5F] uppercase block text-[10px] font-bold">✓ Handling Do's</strong>
-                      <ul className="list-disc list-inside space-y-0.5 text-[#555555] font-medium">
-                        {safetyGuidance.dos?.map((d, i) => <li key={i}>{d}</li>)}
-                      </ul>
-                    </div>
-                    <div className="bg-white p-3 rounded-lg border-2 border-[#D6E8DF] space-y-1">
-                      <strong className="text-[#222222] uppercase block text-[10px] font-bold">✕ Handling Don'ts</strong>
-                      <ul className="list-disc list-inside space-y-0.5 text-[#555555] font-medium">
-                        {safetyGuidance.donts?.map((d, i) => <li key={i}>{d}</li>)}
-                      </ul>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Input for Recycler Quoted Price */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-[#222222] flex items-center gap-1.5">
-                  <span>{t('recyclerQuotedPrice', 'Recycler Quoted Price')} (₹/{unit}) *</span>
-                </label>
                 <button
                   type="button"
                   onClick={() => {
-                    setQuotedPrice(String(displayBenchmark));
-                    setIsCustomQuote(false);
+                    const fairEstimate = Math.round(displayBenchmark * parsedWeight);
+                    setExpectedPrice(String(fairEstimate));
+                    setIsCustomPrice(false);
                   }}
-                  className="text-[11px] font-bold text-[#1F6F5F] hover:text-[#2FA084] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-[11px] font-bold text-[#1F6F5F] hover:text-[#2FA084] hover:underline flex items-center gap-1 cursor-pointer self-start sm:self-auto"
                 >
                   <RefreshCw className="w-3 h-3" />
-                  <span>{t('useBenchmarkRate', 'Use Benchmark')} (₹{displayBenchmark}/{unit})</span>
+                  <span>Set Fair Baseline (₹{Math.round(displayBenchmark * parsedWeight).toLocaleString()})</span>
                 </button>
               </div>
 
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#555555]">
-                  ₹
-                </span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#555555]">₹</span>
                 <input
                   type="number"
-                  min="0.1"
+                  min="0"
                   step="any"
-                  required
-                  value={quotedPrice}
+                  value={expectedPrice}
                   onChange={(e) => {
-                    setQuotedPrice(e.target.value);
-                    setIsCustomQuote(true);
+                    setExpectedPrice(e.target.value);
+                    setIsCustomPrice(true);
                   }}
-                  placeholder={`e.g. ${displayBenchmark}`}
-                  className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg pl-8 pr-16 py-3.5 text-sm font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                  className={`w-full bg-white border-2 ${fieldErrors.expectedPrice ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg pl-8 pr-4 py-3 text-sm font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#555555] uppercase">
-                  / {unit}
-                </span>
               </div>
-              <p className="text-[11px] text-[#555555] mt-1.5">
-                {t('quotedPriceHelpText', 'Enter your asking or quoted price per {unit}. The system checks if it falls within the fair ±{tolerance}% reference range.', { unit, tolerance: displayTolerance })}
-              </p>
-            </div>
+              {fieldErrors.expectedPrice && (
+                <p className="text-[11px] text-red-600 mt-1">{fieldErrors.expectedPrice}</p>
+              )}
 
-            {/* Live Benchmark & Allowed Range Summary Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-lg bg-white border-2 border-[#D6E8DF] space-y-1">
-                <span className="text-[10px] font-bold uppercase text-[#555555] tracking-wider block">
-                  {t('categoryBenchmarkLabel', 'Category Benchmark')}
-                </span>
-                <span className="text-base font-bold text-[#222222] block">
-                  ₹{displayBenchmark} / {unit}
-                </span>
-                <span className="text-[10px] text-[#555555] block">
-                  {t('cpcbReferenceRateLabel', 'CPCB Reference Price')}
-                </span>
-              </div>
+              {/* Fair Benchmark Transparency Cards */}
+              <div className="p-4 bg-[#EFF8F2] rounded-lg border-2 border-[#D6E8DF] space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#1F6F5F] flex items-center gap-1">
+                    <ShieldCheck className="w-4 h-4" /> EcoLink Fair Pricing Reference Engine
+                  </span>
+                  <span className="text-[10px] font-bold uppercase bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] px-2 py-0.5 rounded">
+                    Tolerance: ±{displayTolerance}%
+                  </span>
+                </div>
 
-              <div className="p-3.5 rounded-lg bg-white border-2 border-[#D6E8DF] space-y-1">
-                <span className="text-[10px] font-bold uppercase text-[#555555] tracking-wider block">
-                  {t('allowedPriceRange', 'Allowed Price Range')} (±{displayTolerance}%)
-                </span>
-                <span className="text-base font-bold text-[#1F6F5F] block">
-                  ₹{minPrice} – ₹{maxPrice} / {unit}
-                </span>
-                <span className="text-[10px] text-[#555555] block">
-                  {t('fairTransactionBoundsLabel', 'Fair Transaction Bounds')}
-                </span>
-              </div>
-
-              <div className="p-3.5 rounded-lg bg-white border-2 border-[#D6E8DF] space-y-1">
-                <span className="text-[10px] font-bold uppercase text-[#555555] tracking-wider block">
-                  {t('estimatedTotalValue', 'Estimated Total Value')}
-                </span>
-                <span className="text-base font-bold text-[#222222] block">
-                  ₹{estimatedTotalAmount.toLocaleString()}
-                </span>
-                <span className="text-[10px] text-[#555555] block">
-                  {parsedQty} {unit} × ₹{parsedQuote || 0}
-                </span>
-              </div>
-            </div>
-
-            {/* Clearance & Validation Status Banner */}
-            <div className={`p-4 rounded-lg border-2 bg-white ${
-              validation.isCleared
-                ? 'border-[#6FCF97]'
-                : 'border-[#D6E8DF]'
-            }`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-white border-2 border-[#D6E8DF] text-[#1F6F5F]">
-                    {validation.isCleared ? (
-                      <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" />
-                    ) : (
-                      <AlertTriangle className="w-5 h-5 text-[#555555]" />
-                    )}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  <div className="bg-white p-3 rounded-lg border-2 border-[#D6E8DF]">
+                    <span className="text-[10px] uppercase font-bold text-[#555555] block">CPCB Reference Rate</span>
+                    <span className="text-sm font-bold text-[#222222]">₹{displayBenchmark} / kg</span>
                   </div>
-                  <div className="space-y-0.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-[#222222]">
-                        Validation Status:
-                      </span>
-                      <span className={`px-2 py-0.5 rounded text-[11px] font-bold bg-white border-2 ${
-                        validation.isCleared 
-                          ? 'border-[#6FCF97] text-[#1F6F5F]' 
-                          : 'border-[#D6E8DF] text-[#222222]'
-                      }`}>
-                        {validation.isCleared ? t('preClearedBadge', 'PRE-CLEARED ✅') : t('notClearedBadge', 'NOT CLEARED ❌')}
-                      </span>
-                      {!validation.isCleared && (
-                        <span className="text-[11px] font-bold uppercase text-[#555555] bg-white border-2 border-[#D6E8DF] px-2 py-0.5 rounded">
-                          {validation.position === 'BELOW_RANGE' ? t('belowAllowedRange', 'Below Allowed Range') : t('aboveAllowedRange', 'Above Allowed Range')}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs font-bold leading-snug text-[#222222]">
-                      {validation.message}
-                    </p>
-                    <p className="text-[11px] text-[#555555]">
-                      {validation.explanation}
-                    </p>
+                  <div className="bg-white p-3 rounded-lg border-2 border-[#D6E8DF]">
+                    <span className="text-[10px] uppercase font-bold text-[#555555] block">Fair Range (Total)</span>
+                    <span className="text-sm font-bold text-[#1F6F5F]">₹{minTotalVal.toLocaleString()} – ₹{maxTotalVal.toLocaleString()}</span>
+                  </div>
+                  <div className="bg-white p-3 rounded-lg border-2 border-[#D6E8DF]">
+                    <span className="text-[10px] uppercase font-bold text-[#555555] block">Effective Unit Rate</span>
+                    <span className="text-sm font-bold text-[#222222]">₹{parsedWeight > 0 ? (parsedPrice / parsedWeight).toFixed(1) : '0'} / kg</span>
                   </div>
                 </div>
 
-                <div className="shrink-0 self-end sm:self-center">
-                  <span className={`px-3 py-1.5 rounded-lg text-xs font-bold border-2 flex items-center gap-1.5 bg-white ${
-                    validation.isCleared
-                      ? 'border-[#6FCF97] text-[#1F6F5F]'
-                      : 'border-[#D6E8DF] text-[#222222]'
+                <div className="flex items-center justify-between bg-white p-2.5 rounded-lg border-2 border-[#D6E8DF] text-xs">
+                  <span className="font-bold text-[#222222]">Expected Price Status:</span>
+                  <span className={`px-2.5 py-0.5 rounded text-[11px] font-bold border-2 ${
+                    isPriceCleared 
+                      ? 'border-[#6FCF97] text-[#1F6F5F] bg-green-50' 
+                      : 'border-[#D6E8DF] text-[#555555] bg-gray-50'
                   }`}>
-                    {validation.isCleared ? (
-                      <>
-                        <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
-                        <span>{t('preClearedBadge', 'Pre-Cleared')}</span>
-                      </>
-                    ) : (
-                      <>
-                        <AlertTriangle className="w-4 h-4 text-[#555555]" />
-                        <span>{t('flaggedBadge', 'Flagged')} ({validation.diffPercent}% off)</span>
-                      </>
-                    )}
+                    {isPriceCleared ? 'PRE-CLEARED FAIR RATE ✅' : 'CUSTOM QUOTE (Recyclers Will Review)'}
                   </span>
                 </div>
               </div>
             </div>
+
+            {/* 13. Preferred Pickup Date / Time */}
+            <div>
+              <label className="text-xs font-bold text-[#222222] block mb-1">
+                Preferred Pickup Date & Time <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="datetime-local"
+                min={getMinDateTime()}
+                value={preferredPickupDate}
+                onChange={(e) => setPreferredPickupDate(e.target.value)}
+                className={`w-full bg-white border-2 ${fieldErrors.preferredPickupDate ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
+              />
+              {fieldErrors.preferredPickupDate && (
+                <p className="text-[11px] text-red-600 mt-1">{fieldErrors.preferredPickupDate}</p>
+              )}
+            </div>
           </div>
 
-          {/* Notes */}
-          <div>
-            <label className="text-xs font-bold text-[#222222] block mb-1">
-              {t('additionalInspectionNotes', 'Collector Notes / Special Instructions')}
-            </label>
-            <textarea
-              rows="3"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t('placeholderStorageNotes', 'e.g. Stored in ESD safe boxes, ready for loading dock inspection.')}
-              className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg p-4 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
-            />
+          {/* ======================================================== */}
+          {/* SECTION 4: IMAGES AND ADDITIONAL NOTES */}
+          {/* ======================================================== */}
+          <div className="bg-white p-6 rounded-lg border-2 border-[#D6E8DF] space-y-5">
+            <div className="flex items-center gap-2 border-b-2 border-[#D6E8DF] pb-3">
+              <span className="w-6 h-6 rounded-full bg-[#1F6F5F] text-white flex items-center justify-center text-xs font-bold">4</span>
+              <h2 className="text-base font-bold text-[#222222]">Images and Additional Notes</h2>
+            </div>
+
+            {/* 7. Waste Images Upload Dropzone */}
+            <div className="space-y-3">
+              <label className="text-xs font-bold text-[#222222] block">
+                Waste Images / Verification Photos
+              </label>
+              
+              <div 
+                onClick={() => fileInputRef.current?.click()}
+                className="border-2 border-dashed border-[#D6E8DF] hover:border-[#1F6F5F] transition rounded-lg p-6 bg-[#F5FBF7] text-center cursor-pointer space-y-2"
+              >
+                <input 
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageSelect}
+                  multiple
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  className="hidden"
+                />
+                <div className="w-10 h-10 rounded-full bg-white border-2 border-[#D6E8DF] text-[#1F6F5F] mx-auto flex items-center justify-center">
+                  <Upload className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-[#222222]">
+                    Click or drag & drop photos here to upload
+                  </p>
+                  <p className="text-[11px] text-[#555555]">
+                    Supports JPG, JPEG, PNG, WEBP (Max 5MB per image)
+                  </p>
+                </div>
+              </div>
+
+              {imageUploadError && (
+                <p className="text-xs text-red-600 font-bold">{imageUploadError}</p>
+              )}
+
+              {/* Thumbnails preview list */}
+              {images.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                  {images.map((img) => (
+                    <div 
+                      key={img.id}
+                      className="relative rounded-lg border-2 border-[#D6E8DF] overflow-hidden bg-white p-1.5 group"
+                    >
+                      <img 
+                        src={img.url} 
+                        alt={img.name} 
+                        className="w-full h-24 object-cover rounded"
+                      />
+                      <div className="p-1 text-[10px] truncate text-[#555555] font-semibold">
+                        {img.name} ({img.size} MB)
+                      </div>
+
+                      {img.isUploading && (
+                        <div className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white text-[10px] font-bold gap-1">
+                          <Loader2 className="w-4 h-4 animate-spin text-white" />
+                          <span>Uploading...</span>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(img.id)}
+                        className="absolute top-2 right-2 p-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md shadow transition cursor-pointer"
+                        title="Remove image"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* 14. Additional Notes */}
+            <div>
+              <label className="text-xs font-bold text-[#222222] block mb-1">
+                Additional Notes / Special Instructions
+              </label>
+              <textarea
+                rows="3"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Mention loading dock clearance, packaging details, forklift requirement, or gate pass instructions..."
+                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg p-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+              />
+            </div>
           </div>
 
-          {/* Submit Button */}
-          <div className="pt-4 border-t-2 border-[#D6E8DF] flex items-center justify-end gap-4">
+          {/* Form Actions */}
+          <div className="pt-4 border-t-2 border-[#D6E8DF] flex flex-col sm:flex-row items-center justify-end gap-3">
             <button
               type="button"
               onClick={() => navigate('/collector/dashboard')}
-              className="px-6 py-3.5 text-xs font-bold text-[#555555] hover:text-[#222222] cursor-pointer"
+              className="w-full sm:w-auto px-6 py-3.5 text-xs font-bold text-[#555555] hover:text-[#222222] transition cursor-pointer"
             >
-              {t('cancel', 'Cancel')}
+              Cancel
             </button>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-8 py-3.5 bg-[#1F6F5F] hover:bg-[#2FA084] disabled:opacity-60 text-white rounded-lg font-bold text-xs transition flex items-center gap-2 cursor-pointer"
+              className="w-full sm:w-auto px-8 py-3.5 bg-[#1F6F5F] hover:bg-[#2FA084] disabled:opacity-60 text-white rounded-lg font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{t('submittingToDatabase', 'Submitting to Database...')}</span>
+                  <span>Registering Waste Batch in Supabase...</span>
                 </>
               ) : (
                 <>
                   <ShieldCheck className="w-4 h-4" />
-                  <span>{t('submitAndBroadcastBtn', 'Declare Request & Broadcast to Recyclers')}</span>
+                  <span>Register Waste Batch & Broadcast to Recyclers</span>
                 </>
               )}
             </button>

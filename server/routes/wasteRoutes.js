@@ -5,7 +5,8 @@ import {
   getAvailableWasteLots,
   getWasteLotById,
   getWasteLotOffers,
-  cancelWasteLot
+  cancelWasteLot,
+  uploadWasteImage
 } from '../controllers/wasteController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { requireRole } from '../middleware/roleMiddleware.js';
@@ -13,6 +14,14 @@ import { validateRequest } from '../middleware/validationMiddleware.js';
 import { createWasteLotValidationRules } from '../validators/wasteValidator.js';
 
 const router = express.Router();
+
+// Upload waste image to Supabase Storage
+router.post(
+  '/upload-image',
+  authMiddleware,
+  requireRole('collector'),
+  uploadWasteImage
+);
 
 // Collector creates a waste lot
 router.post(
