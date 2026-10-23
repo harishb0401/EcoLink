@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, DollarSign, Download, CheckCircle2, ShieldCheck, Building } from 'lucide-react';
 import TransactionCard from '../../components/Cards/TransactionCard';
 import { mockTransactions } from '../../data/mockData';
@@ -6,6 +7,7 @@ import { useTranslation } from '../../i18n';
 
 export default function RecyclerTransactions({ transactions = mockTransactions }) {
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
   const { t } = useTranslation();
 
   const txList = transactions || mockTransactions;
@@ -59,8 +61,9 @@ export default function RecyclerTransactions({ transactions = mockTransactions }
         {filtered.map((tx) => (
           <TransactionCard
             key={tx.id}
-            transaction={tx}
-            onViewDetails={() => alert(`Viewing Recycler Purchase Order #${tx.id}`)}
+            tx={tx}
+            detailUrl={`/recycler/transactions/${tx.id}`}
+            onViewDetails={(item) => navigate(`/recycler/transactions/${item.id}`)}
           />
         ))}
       </div>

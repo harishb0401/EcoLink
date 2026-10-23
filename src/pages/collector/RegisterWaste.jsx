@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { structuredEWasteCategories } from '../../data/scrapPrices';
 import { calculateFairPriceRange } from '../../utils/rulesEngine';
+import { getHazardousAssessment } from '../../utils/hazardousAssessment';
 import { mockBenchmarkPrices } from '../../data/mockData';
 import { validateQuotedPriceBackend } from '../../services/pricingService';
 import wasteService from '../../services/wasteService';
@@ -52,25 +53,49 @@ export default function RegisterWaste({
   // SECTION 2: COLLECTION AND STORAGE DETAILS
   // ==========================================
   // 8. Collection Address
-  const [collectionAddress, setCollectionAddress] = useState(
-    collectorProfile?.address || collectorProfile?.location || ''
-  );
+  const rawProfileAddr = (collectorProfile?.address || collectorProfile?.location || '').trim();
+  const initialProfileAddr = rawProfileAddr === 'Chennai Hub' ? '' : rawProfileAddr;
+  const [collectionAddress, setCollectionAddress] = useState(initialProfileAddr);
   const [latitude, setLatitude] = useState(null);
   const [longitude, setLongitude] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
   const [locationSuccess, setLocationSuccess] = useState('');
 
-  // 9. City / District
+  // 9. City / District (No hardcoded Chennai default)
   const [cityDistrict, setCityDistrict] = useState(
-    collectorProfile?.city || collectorProfile?.district || 'Chennai'
+    collectorProfile?.city || collectorProfile?.district || ''
   );
+
+  // Synchronize collection address and city when collectorProfile is loaded or updated
+  useEffect(() => {
+    if (collectorProfile) {
+      const pAddr = (collectorProfile.address || collectorProfile.location || '').trim();
+      const cleanAddr = pAddr === 'Chennai Hub' ? '' : pAddr;
+      if (cleanAddr && (!collectionAddress || collectionAddress === 'Chennai Hub')) {
+        setCollectionAddress(cleanAddr);
+      }
+      const pCity = (collectorProfile.city || collectorProfile.district || '').trim();
+      if (pCity && !cityDistrict) {
+        setCityDistrict(pCity);
+      } else if (!cityDistrict && cleanAddr) {
+        const parts = cleanAddr.split(',').map(s => s.trim()).filter(Boolean);
+        if (parts.length > 1) {
+          setCityDistrict(parts[parts.length - 1]);
+        }
+      }
+    }
+  }, [collectorProfile]);
 
   // 10. Storage Condition
   const [storageCondition, setStorageCondition] = useState('Indoor storage');
   const [storageConditionDetails, setStorageConditionDetails] = useState('');
 
-  // 11. Battery / Hazardous Material Condition
-  const [hazardousCondition, setHazardousCondition] = useState('No known batteries or hazardous materials');
+  // 11. Battery / Hazardous Material Condition (Auto-populated from Category)
+  const initialHazardInfo = getHazardousAssessment(structuredEWasteCategories[0].name);
+  const [hazardousCondition, setHazardousCondition] = useState(initialHazardInfo.assessment);
+  const [hazardousAssessmentStatus, setHazardousAssessmentStatus] = useState(initialHazardInfo.verificationStatus || 'Requires Verification');
+  const [batteryPhysicalState, setBatteryPhysicalState] = useState(initialHazardInfo.defaultBatteryState);
+  const [batteryType, setBatteryType] = useState('Not Specified / Unknown');
   const [hazardousConditionDetails, setHazardousConditionDetails] = useState('');
 
   // ==========================================
@@ -151,6 +176,18 @@ export default function RegisterWaste({
   // Handle Category Change
   const handleCategoryChange = (newCat) => {
     setCategory(newCat);
+
+    // Automatically update Battery / Hazardous Material Condition from centralized mapping
+    const hazardInfo = getHazardousAssessment(newCat);
+    setHazardousCondition(hazardInfo.assessment);
+    setHazardousAssessmentStatus(hazardInfo.verificationStatus || 'Requires Verification');
+    setBatteryPhysicalState(hazardInfo.defaultBatteryState);
+
+    // Clear stale battery chemistry when changing to categories where batteries are unlikely
+    if (hazardInfo.batteryLikelihood === 'Unlikely') {
+      setBatteryType('Not Specified / Unknown');
+    }
+
     if (newCat === 'Other') {
       setMaterial('Custom / Other E-Waste Stream');
       if (!isCustomPrice && !isOpenToMarket) {
@@ -432,7 +469,14 @@ export default function RegisterWaste({
         storageCondition,
         storageConditionDetails: storageConditionDetails.trim(),
         hazardousCondition,
-        hazardousConditionDetails: hazardousConditionDetails.trim(),
+        hazardousConditionDetails: [
+          batteryPhysicalState !== 'Unconfirmed / Pending Physical Manifest' && batteryPhysicalState !== 'No Batteries Applicable for Item' ? `[Battery State: ${batteryPhysicalState}]` : null,
+          batteryType !== 'Not Specified / Unknown' ? `[Battery Type: ${batteryType}]` : null,
+          hazardousConditionDetails.trim() || null
+        ].filter(Boolean).join('; '),
+        hazardousAssessmentStatus,
+        batteryPhysicalState,
+        batteryType,
         expectedPrice: exactEnteredPrice,
         isOpenToMarket,
         pricingMode: isOpenToMarket ? 'MARKET_BIDS' : 'FIXED_EXPECTED',
@@ -517,8 +561,8 @@ export default function RegisterWaste({
               <h2 className="text-base font-bold text-[#222222]">Waste Information</h2>
             </div>
 
-            {/* 1. Category & Other */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* 1. Category & Custom Item Type (if Other) */}
+            <div className={isOtherCategory ? "grid grid-cols-1 sm:grid-cols-2 gap-4" : "grid grid-cols-1 gap-4"}>
               <div>
                 <label className="text-xs font-bold text-[#222222] block mb-1">
                   Waste Category / Item Type <span className="text-red-500">*</span>
@@ -535,7 +579,7 @@ export default function RegisterWaste({
                 </select>
               </div>
 
-              {isOtherCategory ? (
+              {isOtherCategory && (
                 <div>
                   <label className="text-xs font-bold text-[#222222] block mb-1">
                     Specify Custom Item Type <span className="text-red-500">*</span>
@@ -550,18 +594,6 @@ export default function RegisterWaste({
                   {fieldErrors.categoryOther && (
                     <p className="text-[11px] text-red-600 mt-1">{fieldErrors.categoryOther}</p>
                   )}
-                </div>
-              ) : (
-                <div>
-                  <label className="text-xs font-bold text-[#222222] block mb-1">
-                    Standard Material Reference
-                  </label>
-                  <input
-                    type="text"
-                    disabled
-                    value={material}
-                    className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-semibold text-[#555555]"
-                  />
                 </div>
               )}
             </div>
@@ -675,38 +707,60 @@ export default function RegisterWaste({
               <h2 className="text-base font-bold text-[#222222]">Collection and Storage Details</h2>
             </div>
 
-            {/* 8. Collection Address with GPS */}
+            {/* 8. Collection Address with GPS & Profile Sync */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-[#222222]">
-                  Collection Pickup Address <span className="text-red-500">*</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={handleDetectLocation}
-                  disabled={isLocating}
-                  className="text-[11px] font-bold text-[#1F6F5F] hover:text-[#2FA084] flex items-center gap-1 cursor-pointer"
-                >
-                  {isLocating ? (
-                    <>
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                      <span>Detecting GPS...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Navigation className="w-3 h-3" />
-                      <span>Auto-detect GPS Location</span>
-                    </>
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-bold text-[#222222]">
+                    Collection Pickup Address <span className="text-red-500">*</span>
+                  </label>
+                  {(collectorProfile?.location || collectorProfile?.address) && 
+                   (collectorProfile.location !== 'Chennai Hub' && collectorProfile.address !== 'Chennai Hub') && (
+                    <span className="text-[10px] text-[#1F6F5F] font-bold bg-[#EFF8F2] px-2 py-0.5 rounded border border-[#B8D9C8]">
+                      Defaulted from Profile
+                    </span>
                   )}
-                </button>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/collector/profile')}
+                    className="text-[11px] font-bold text-[#555555] hover:text-[#1F6F5F] underline cursor-pointer"
+                  >
+                    Edit in Profile
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDetectLocation}
+                    disabled={isLocating}
+                    className="text-[11px] font-bold text-[#1F6F5F] hover:text-[#2FA084] flex items-center gap-1 cursor-pointer"
+                  >
+                    {isLocating ? (
+                      <>
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        <span>Detecting GPS...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Navigation className="w-3 h-3" />
+                        <span>Auto-detect GPS Location</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
               <textarea
                 rows="2"
                 value={collectionAddress}
                 onChange={(e) => setCollectionAddress(e.target.value)}
-                placeholder="Full street address, building/plot number, loading dock, landmark..."
+                placeholder="Full street address, building/plot number, loading dock, landmark (e.g. Plot 14, SIDCO Industrial Estate)..."
                 className={`w-full bg-white border-2 ${fieldErrors.collectionAddress ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg p-3 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
               />
+              {(!collectorProfile?.location && !collectorProfile?.address) && (
+                <p className="text-[11px] text-[#555555] mt-1">
+                  💡 Tip: You can set your default address in your <button type="button" onClick={() => navigate('/collector/profile')} className="text-[#1F6F5F] font-bold underline cursor-pointer">Profile</button> so all new requests will automatically pre-fill your pickup location.
+                </p>
+              )}
               {locationSuccess && (
                 <p className="text-[10px] font-bold text-[#1F6F5F] mt-1 flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3" />
@@ -768,36 +822,108 @@ export default function RegisterWaste({
               </div>
             </div>
 
-            {/* 11. Battery / Hazardous Material Condition */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold text-[#222222] block">
-                Battery / Hazardous Material Condition <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={hazardousCondition}
-                onChange={(e) => setHazardousCondition(e.target.value)}
-                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-3 text-xs font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
-              >
-                <option value="No known batteries or hazardous materials">No known batteries or hazardous materials</option>
-                <option value="Batteries present and intact">Batteries present and intact</option>
-                <option value="Damaged or leaking batteries">Damaged or leaking batteries</option>
-                <option value="Other hazardous materials present">Other hazardous materials present</option>
-                <option value="Unknown">Unknown</option>
-              </select>
+            {/* 11. Battery / Hazardous Material Condition (Auto-Assessed from Category) */}
+            <div className="space-y-4 pt-3 border-t-2 border-[#D6E8DF]">
+              <div>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                  <div className="flex items-center gap-2">
+                    <label className="text-xs font-bold text-[#222222]">
+                      Battery / Hazardous Material Condition <span className="text-red-500">*</span>
+                    </label>
+                    <span className="text-[10px] font-bold text-[#B45309] bg-[#FEF3C7] border border-[#FCD34D] px-2 py-0.5 rounded flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 text-[#B45309]" />
+                      Requires Verification
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-[#555555] font-semibold bg-[#EFF8F2] border border-[#B8D9C8] px-2 py-0.5 rounded">
+                    Inferred from Category: <strong>{category}</strong>
+                  </span>
+                </div>
 
-              <input
-                type="text"
-                value={hazardousConditionDetails}
-                onChange={(e) => setHazardousConditionDetails(e.target.value)}
-                placeholder="Specific hazardous details (e.g., Li-ion battery packs intact, lead acid caps sealed, capacitor fluid)..."
-                className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-4 py-2.5 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
-              />
+                {/* Read-Only Automatically Generated Assessment */}
+                <div className="relative">
+                  <textarea
+                    rows="2"
+                    readOnly
+                    value={hazardousCondition}
+                    className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg p-3 pr-28 text-xs font-semibold text-[#222222] cursor-not-allowed focus:outline-none"
+                  />
+                  <span className="absolute right-3 top-3 text-[10px] font-bold uppercase text-[#1F6F5F] bg-[#EFF8F2] border border-[#B8D9C8] px-2 py-0.5 rounded pointer-events-none">
+                    Auto-Generated
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#555555] mt-1">
+                  Category selection generates this inferred assessment. It does not certify that the lot is free of hazards.
+                </p>
+              </div>
+
+              {/* Separate Confirmation Fields for Actual Battery / Physical State */}
+              <div className="p-4 bg-[#F9FCFA] border-2 border-[#D6E8DF] rounded-lg space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#222222] flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
+                    <span>Physical Confirmation & Battery Details</span>
+                  </h4>
+                  <span className="text-[10px] text-[#555555]">Optional / Fill if known</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-[#222222] block mb-1">
+                      Actual Battery Presence & Physical State
+                    </label>
+                    <select
+                      value={batteryPhysicalState}
+                      onChange={(e) => setBatteryPhysicalState(e.target.value)}
+                      className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                    >
+                      <option value="Unconfirmed / Pending Physical Manifest">Unconfirmed / Pending Physical Manifest</option>
+                      <option value="Batteries Intact (Securely enclosed)">Batteries Intact (Securely enclosed)</option>
+                      <option value="Batteries Removed (No batteries in lot)">Batteries Removed (No batteries in lot)</option>
+                      <option value="Damaged / Swollen / Leaking Cells">Damaged / Swollen / Leaking Cells (Hazardous)</option>
+                      <option value="No Batteries Applicable for Item">No Batteries Applicable for Item</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-[#222222] block mb-1">
+                      Battery Chemistry / Type (If known)
+                    </label>
+                    <select
+                      value={batteryType}
+                      onChange={(e) => setBatteryType(e.target.value)}
+                      className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                    >
+                      <option value="Not Specified / Unknown">Not Specified / Unknown</option>
+                      <option value="Lithium-Ion (Li-ion)">Lithium-Ion (Li-ion / Li-Po)</option>
+                      <option value="Lead-Acid (SLA / Wet Cell)">Lead-Acid (SLA / Wet Cell)</option>
+                      <option value="Nickel-Metal Hydride (NiMH)">Nickel-Metal Hydride (NiMH)</option>
+                      <option value="Nickel-Cadmium (NiCad)">Nickel-Cadmium (NiCad)</option>
+                      <option value="Alkaline / Button RTC Cells">Alkaline / Button RTC Cells</option>
+                      <option value="Other / Mixed Chemistry">Other / Mixed Chemistry</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-[#222222] block mb-1">
+                    Specific Hazardous & Handling Details (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={hazardousConditionDetails}
+                    onChange={(e) => setHazardousConditionDetails(e.target.value)}
+                    placeholder="e.g. Battery terminals taped, acid caps sealed, capacitors discharged, stored in insulated bins..."
+                    className="w-full bg-white border-2 border-[#D6E8DF] rounded-lg px-3 py-2 text-xs font-semibold text-[#222222] focus:border-[#B8D9C8] focus:outline-none"
+                  />
+                </div>
+              </div>
 
               {/* Regulatory disclaimer box */}
               <div className="p-3 bg-[#EFF8F2] border-2 border-[#D6E8DF] rounded-lg text-[11px] text-[#555555] flex items-start gap-2">
                 <Info className="w-4 h-4 text-[#1F6F5F] shrink-0 mt-0.5" />
                 <p>
-                  <strong className="text-[#222222]">Safety Protocol Notice:</strong> Stating "Unknown" or unverified declarations does not certify that the waste is free of hazardous substances. All batches undergo physical manifest verification by certified CPCB recyclers prior to loading.
+                  <strong className="text-[#222222]">Safety Protocol Notice:</strong> Automatically inferred category assessments do not constitute certified non-hazardous declarations. All waste lots undergo physical manifest verification by certified CPCB recyclers prior to loading.
                 </p>
               </div>
             </div>

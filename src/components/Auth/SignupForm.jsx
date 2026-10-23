@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, Mail, Lock, ArrowRight, Truck, ShieldCheck, Check, AlertCircle, CheckCircle2, Loader2, Building } from 'lucide-react';
+import { User, Phone, Mail, Lock, ArrowRight, Truck, ShieldCheck, Check, AlertCircle, CheckCircle2, Loader2, Building, MapPin } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import authService from '../../services/authService';
 
@@ -9,6 +9,7 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
   const navigate = useNavigate();
   const [signupRole, setSignupRole] = useState('collector'); // 'collector' | 'recycler'
   const [fullName, setFullName] = useState('');
+  const [collectorLocation, setCollectorLocation] = useState('');
   const [organizationName, setOrganizationName] = useState('');
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
@@ -62,7 +63,8 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
         facilityName: signupRole === 'recycler' ? (organizationName.trim() || fullName.trim()) : undefined,
         registrationNumber: signupRole === 'recycler' ? registrationNumber.trim().toUpperCase() : undefined,
         cpcbRegistrationNumber: signupRole === 'recycler' ? registrationNumber.trim().toUpperCase() : undefined,
-        locationText: 'Chennai Hub'
+        locationText: signupRole === 'collector' ? (collectorLocation.trim() || undefined) : undefined,
+        location: signupRole === 'collector' ? (collectorLocation.trim() || undefined) : undefined
       });
 
       setSuccessMessage('Account created successfully! Redirecting...');
@@ -223,6 +225,27 @@ export default function SignupForm({ onSignupSuccess, onSwitchToLogin }) {
               </p>
             </div>
           </>
+        )}
+
+        {signupRole === 'collector' && (
+          <div>
+            <label className="text-xs font-bold text-[#222222] block mb-1">
+              Collection Pickup Address (Optional)
+            </label>
+            <div className="relative">
+              <MapPin className="w-4 h-4 text-[#555555] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={collectorLocation}
+                onChange={(e) => setCollectorLocation(e.target.value)}
+                placeholder="e.g. Plot 14, SIDCO, Madurai (or provide in profile)"
+                className="w-full bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg pl-10 pr-4 py-2 text-xs font-medium text-[#222222] placeholder:text-[#555555] focus:border-[#B8D9C8] focus:outline-none"
+              />
+            </div>
+            <p className="text-[10px] text-[#555555] mt-1">
+              Used as your default pickup location. You can configure or change this anytime in your Profile.
+            </p>
+          </div>
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

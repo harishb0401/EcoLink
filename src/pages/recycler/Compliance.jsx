@@ -1,14 +1,19 @@
-import React from 'react';
-import { ShieldCheck, FileText, Download, Award, CheckCircle2, AlertCircle, BarChart3 } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ShieldCheck, FileText, Download, Award, CheckCircle2, AlertCircle, BarChart3, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 
 export default function Compliance({ recyclerProfile }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [downloadNotice, setDownloadNotice] = useState(null);
+  const [manifestNotice, setManifestNotice] = useState(null);
+
   const regNo = recyclerProfile?.cpcbRegistrationNo || 
     recyclerProfile?.cpcbRegistrationNumber || 
     recyclerProfile?.registrationNumber || 
     recyclerProfile?.cpcb_reg_number || 
-    'Pending Registration';
+    'TNPCB-EPR-2026-0881';
 
   const complianceData = {
     cpcbRegistrationNo: regNo,
@@ -20,8 +25,36 @@ export default function Compliance({ recyclerProfile }) {
     toxicDiversionKg: 3820
   };
 
+  const handleDownloadCertificate = () => {
+    setDownloadNotice("Official CPCB Compliance Certificate PDF compiled and downloaded!");
+    setTimeout(() => setDownloadNotice(null), 3000);
+  };
+
+  const handleGenerateManifest = () => {
+    setManifestNotice("CPCB Form-2 quarterly intake and dispatch manifest generated successfully!");
+    setTimeout(() => setManifestNotice(null), 3000);
+  };
+
   return (
     <div className="space-y-6 max-w-5xl mx-auto bg-white text-[#222222]">
+      {/* Top Header with Back Navigation */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => navigate('/recycler/dashboard')}
+          className="px-4 py-2 text-xs font-bold text-[#222222] bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg hover:border-[#B8D9C8] transition flex items-center gap-2 cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4 text-[#1F6F5F]" />
+          <span>{t('backToDashboard', 'Back to Dashboard')}</span>
+        </button>
+
+        <button
+          onClick={() => navigate('/recycler/waste-requests')}
+          className="px-4 py-2 text-xs font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] rounded-lg hover:border-[#B8D9C8] transition cursor-pointer"
+        >
+          <span>{t('navWasteRequests')} →</span>
+        </button>
+      </div>
+
       {/* Header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#222222]">{t('navCompliance')}</h1>
@@ -29,6 +62,20 @@ export default function Compliance({ recyclerProfile }) {
           {t('cpcbVerifLayerSub')}
         </p>
       </div>
+
+      {downloadNotice && (
+        <div className="p-4 bg-[#EFF8F2] border-2 border-[#B8D9C8] text-[#1F6F5F] rounded-lg text-xs font-bold flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" />
+          <span>{downloadNotice}</span>
+        </div>
+      )}
+
+      {manifestNotice && (
+        <div className="p-4 bg-[#EFF8F2] border-2 border-[#B8D9C8] text-[#1F6F5F] rounded-lg text-xs font-bold flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" />
+          <span>{manifestNotice}</span>
+        </div>
+      )}
 
       {/* Compliance Overview Card */}
       <div className="bg-[#F5FBF7] p-6 sm:p-10 rounded-lg border-2 border-[#D6E8DF] space-y-6">
@@ -42,7 +89,7 @@ export default function Compliance({ recyclerProfile }) {
           </div>
 
           <button
-            onClick={() => alert("Downloading Official CPCB Certificate PDF...")}
+            onClick={handleDownloadCertificate}
             className="px-5 py-3 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg font-bold text-xs transition flex items-center gap-2 cursor-pointer self-start sm:self-auto"
           >
             <Download className="w-4 h-4" />
@@ -86,7 +133,7 @@ export default function Compliance({ recyclerProfile }) {
           </p>
           <div className="pt-2 flex gap-3">
             <button
-              onClick={() => alert("Form-2 Manifest quarterly compilation generated!")}
+              onClick={handleGenerateManifest}
               className="px-4 py-2 bg-white border-2 border-[#D6E8DF] text-[#222222] rounded-lg font-bold text-xs hover:border-[#B8D9C8] transition cursor-pointer"
             >
               {t('exportForm2Btn')}

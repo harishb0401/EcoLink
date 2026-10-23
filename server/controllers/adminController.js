@@ -114,7 +114,7 @@ export async function getCollectors(req, res, next) {
         company: c.full_name,
         email: c.email,
         phone: c.phone,
-        location: c.location || 'Chennai Hub',
+        location: (c.location && c.location !== 'Chennai Hub') ? c.location : 'Not Specified',
         totalLotsDeclared: lots.length,
         volumeDeclared: `${totalVolume} kg`,
         volumeDeclaredKg: totalVolume,

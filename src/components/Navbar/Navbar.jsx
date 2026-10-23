@@ -3,7 +3,7 @@ import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Menu, X, ArrowRight, User, 
   CheckCircle2, LogOut, ShieldCheck, 
-  ChevronDown
+  ChevronDown, Bell
 } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import OfflineIndicator from '../OfflineIndicator';
@@ -157,6 +157,9 @@ export default function Navbar({
               <Link to="/recycler/transactions" className={getNavLinkClass('/recycler/transactions')}>
                 {t("navTransactions")}
               </Link>
+              <Link to="/recycler/compliance" className={getNavLinkClass('/recycler/compliance')}>
+                {t("navCompliance")}
+              </Link>
             </nav>
           )}
 
@@ -247,6 +250,22 @@ export default function Navbar({
                         >
                           <User className="w-4 h-4 text-[#1F6F5F]" />
                           <span>{t("profile")}</span>
+                        </Link>
+                        {isRecycler && (
+                          <Link
+                            to="/recycler/compliance"
+                            className="w-full text-left px-4 py-2 hover:text-[#1F6F5F] transition flex items-center gap-2.5 cursor-pointer"
+                          >
+                            <ShieldCheck className="w-4 h-4 text-[#1F6F5F]" />
+                            <span>{t("navCompliance")}</span>
+                          </Link>
+                        )}
+                        <Link
+                          to={isRecycler ? '/recycler/notifications' : '/collector/notifications'}
+                          className="w-full text-left px-4 py-2 hover:text-[#1F6F5F] transition flex items-center gap-2.5 cursor-pointer"
+                        >
+                          <Bell className="w-4 h-4 text-[#1F6F5F]" />
+                          <span>{t("navNotifications")}</span>
                         </Link>
                       </div>
 
@@ -386,6 +405,12 @@ export default function Navbar({
               </Link>
               <Link to="/recycler/transactions" className={getMobileNavLinkClass('/recycler/transactions')}>
                 {t("navTransactions")}
+              </Link>
+              <Link to="/recycler/compliance" className={getMobileNavLinkClass('/recycler/compliance')}>
+                {t("navCompliance")}
+              </Link>
+              <Link to="/recycler/notifications" className={getMobileNavLinkClass('/recycler/notifications')}>
+                {t("navNotifications")}
               </Link>
 
 

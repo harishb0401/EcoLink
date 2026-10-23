@@ -98,6 +98,9 @@ export async function createWasteLot(req, res, next) {
       storageConditionDetails,
       hazardousCondition,
       hazardousConditionDetails,
+      hazardousAssessmentStatus,
+      batteryPhysicalState,
+      batteryType,
       expectedPrice,
       preferredPickupDate,
       imageUrls = [],
@@ -131,8 +134,19 @@ export async function createWasteLot(req, res, next) {
 
     const finalCategory = (category === 'Other' && categoryOther) ? categoryOther : (category || 'Other');
     const finalMaterial = material || categoryOther || finalCategory;
-    const finalAddress = collectionAddress || locationText || location || 'Chennai Hub';
-    const finalLocation = cityDistrict ? `${finalAddress}, ${cityDistrict}` : finalAddress;
+
+    let finalAddress = collectionAddress || locationText || location || '';
+    if (!finalAddress && collectorId) {
+      try {
+        const { data: userProfile } = await supabase.from('profiles').select('location').eq('id', collectorId).maybeSingle();
+        if (userProfile?.location && userProfile.location !== 'Chennai Hub') {
+          finalAddress = userProfile.location;
+        }
+      } catch (err) {
+        console.warn('Could not query collector profile location:', err.message);
+      }
+    }
+    const finalLocation = (cityDistrict && finalAddress) ? `${finalAddress}, ${cityDistrict}` : (finalAddress || cityDistrict || 'Location Pending');
 
     // 1. Authoritative server-side classification and pricing calculation
     const classification = classifyEWaste(finalMaterial || finalCategory);
@@ -178,7 +192,8 @@ export async function createWasteLot(req, res, next) {
       notes ? `[Notes: ${notes.trim()}]` : null,
       category === 'Other' && categoryOther ? `[Custom Item Type: ${categoryOther}]` : null,
       storageCondition ? `[Storage: ${storageCondition}${storageConditionDetails ? ` - ${storageConditionDetails}` : ''}]` : null,
-      hazardousCondition ? `[Hazardous/Battery: ${hazardousCondition}${hazardousConditionDetails ? ` - ${hazardousConditionDetails}` : ''}]` : null,
+      hazardousCondition ? `[Hazardous Assessment: ${hazardousCondition}${hazardousConditionDetails ? ` | ${hazardousConditionDetails}` : ''}]` : null,
+      hazardousAssessmentStatus ? `[Hazard Verification: ${hazardousAssessmentStatus}]` : null,
       isMarketBidsMode ? '[Pricing Mode: Open to Market Bids]' : `[Expected Price: ₹${finalStoredPrice}]`,
       preferredPickupDate ? `[Preferred Pickup: ${preferredPickupDate}]` : null,
       clientOperationId ? `[OpId: ${clientOperationId}]` : null
@@ -275,7 +290,9 @@ export async function createWasteLot(req, res, next) {
       collection_address: finalAddress,
       city_district: cityDistrict || '',
       storage_condition: storageCondition || 'Indoor storage',
-      hazardous_condition: hazardousCondition || 'No known batteries or hazardous materials',
+      hazardous_condition: hazardousCondition || 'Electronic components may contain hazardous substances; physical verification is required.',
+      hazardous_condition_details: hazardousConditionDetails || '',
+      hazardous_assessment_status: hazardousAssessmentStatus || 'REQUIRES_PHYSICAL_VERIFICATION',
       expected_price: finalStoredPrice,
       preferred_pickup_date: preferredPickupDate ? new Date(preferredPickupDate).toISOString() : null,
       notes: notes || ''
@@ -521,7 +538,9 @@ export async function getAvailableWasteLots(req, res, next) {
         collectionAddress: lot.collection_address || lot.location,
         cityDistrict: lot.city_district || '',
         storageCondition: lot.storage_condition || 'Indoor storage',
-        hazardousCondition: lot.hazardous_condition || 'No known batteries or hazardous materials',
+        hazardousCondition: lot.hazardous_condition || 'Electronic components may contain hazardous substances; physical verification is required.',
+        hazardousConditionDetails: lot.hazardous_condition_details || '',
+        hazardousAssessmentStatus: lot.hazardous_assessment_status || 'REQUIRES_PHYSICAL_VERIFICATION',
         preferredPickupDate: lot.preferred_pickup_date || lot.pickup_date,
         imageUrls: lot.image_urls || [],
         notes: lot.notes || '',
@@ -614,7 +633,9 @@ export async function getWasteLotById(req, res, next) {
       collectionAddress: lot.collection_address || lot.location,
       cityDistrict: lot.city_district || '',
       storageCondition: lot.storage_condition || 'Indoor storage',
-      hazardousCondition: lot.hazardous_condition || 'No known batteries or hazardous materials',
+      hazardousCondition: lot.hazardous_condition || 'Electronic components may contain hazardous substances; physical verification is required.',
+      hazardousConditionDetails: lot.hazardous_condition_details || '',
+      hazardousAssessmentStatus: lot.hazardous_assessment_status || 'REQUIRES_PHYSICAL_VERIFICATION',
       preferredPickupDate: lot.preferred_pickup_date || lot.pickup_date,
       imageUrls: lot.image_urls || [],
       notes: lot.notes || '',

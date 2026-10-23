@@ -251,7 +251,7 @@ export async function register(req, res, next) {
     }
 
     const userId = authUser.user.id;
-    const resolvedProfileLocation = location || address || locationText || 'Chennai Hub';
+    const resolvedProfileLocation = location || address || locationText || null;
 
     // 2. Insert corresponding record in public.profiles using matching Supabase Auth UUID
     const profilePayload = {

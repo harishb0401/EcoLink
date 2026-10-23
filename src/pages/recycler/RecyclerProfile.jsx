@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Building, ShieldCheck, Phone, Mail, MapPin, CheckCircle2, Edit3, Save, Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Building, ShieldCheck, Phone, Mail, MapPin, CheckCircle2, Edit3, Save, Loader2, ArrowLeft } from 'lucide-react';
 import { useTranslation } from '../../i18n';
 import authService from '../../services/authService';
 import recyclerService from '../../services/recyclerService';
 
 export default function RecyclerProfile({ currentUser, onProfileUpdated }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState({
     companyName: currentUser?.recyclerProfile?.facilityName || currentUser?.recyclerProfile?.companyName || currentUser?.organizationName || currentUser?.fullName || '',
     cpcbRegistrationNo: currentUser?.recyclerProfile?.cpcbRegistrationNo || currentUser?.recyclerProfile?.cpcbRegistrationNumber || currentUser?.recyclerProfile?.registrationNumber || '',
@@ -103,7 +105,27 @@ export default function RecyclerProfile({ currentUser, onProfileUpdated }) {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto bg-white text-[#222222]">
-      {/* Header */}
+      {/* Top Header with Back Button */}
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => navigate('/recycler/dashboard')}
+          className="px-4 py-2 text-xs font-bold text-[#222222] bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg hover:border-[#B8D9C8] transition flex items-center gap-2 cursor-pointer"
+        >
+          <ArrowLeft className="w-4 h-4 text-[#1F6F5F]" />
+          <span>{t('backToDashboard', 'Back to Dashboard')}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsEditing(!isEditing)}
+          className="px-4 py-2 bg-white hover:border-[#B8D9C8] text-[#222222] border-2 border-[#D6E8DF] rounded-lg font-bold text-xs transition flex items-center gap-1.5 cursor-pointer"
+        >
+          <Edit3 className="w-3.5 h-3.5 text-[#1F6F5F]" />
+          <span>{isEditing ? t('cancel') : 'Edit Profile'}</span>
+        </button>
+      </div>
+
+      {/* Header Info */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-[#222222]">{t('navProfile')}</h1>
         <p className="text-xs sm:text-sm text-[#555555]">
@@ -114,7 +136,7 @@ export default function RecyclerProfile({ currentUser, onProfileUpdated }) {
       {savedSuccess && (
         <div className="p-4 bg-[#EFF8F2] border-2 border-[#D6E8DF] text-[#1F6F5F] rounded-lg text-xs font-bold flex items-center gap-2">
           <CheckCircle2 className="w-5 h-5 text-[#1F6F5F]" />
-          <span>{t('save')} ✓</span>
+          <span>Profile saved successfully! ✓</span>
         </div>
       )}
 
@@ -142,14 +164,6 @@ export default function RecyclerProfile({ currentUser, onProfileUpdated }) {
               </p>
             </div>
           </div>
-
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="px-4 py-2 bg-white hover:border-[#B8D9C8] text-[#222222] border-2 border-[#D6E8DF] rounded-lg font-bold text-xs transition flex items-center gap-1.5 cursor-pointer self-start sm:self-auto"
-          >
-            <Edit3 className="w-3.5 h-3.5 text-[#1F6F5F]" />
-            <span>{isEditing ? t('cancel') : t('editPrice')}</span>
-          </button>
         </div>
 
         <form onSubmit={handleSave} className="space-y-6">

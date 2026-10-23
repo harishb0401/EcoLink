@@ -28,6 +28,7 @@ import CollectorNotifications from '../pages/collector/CollectorNotifications';
 import RecyclerDashboard from '../pages/recycler/RecyclerDashboard';
 import WasteRequests from '../pages/recycler/WasteRequests';
 import RecyclerTransactions from '../pages/recycler/RecyclerTransactions';
+import Compliance from '../pages/recycler/Compliance';
 import RecyclerProfile from '../pages/recycler/RecyclerProfile';
 import RecyclerNotifications from '../pages/recycler/RecyclerNotifications';
 
@@ -83,11 +84,14 @@ export default function AppRoutes({
 
       {/* 3. RECYCLER ROUTES */}
       <Route path="/recycler" element={<RecyclerLayout currentUser={currentUser} onLogout={onLogout} />}>
-        <Route path="dashboard" element={<RecyclerDashboard materialLots={materialLots} recyclerProfile={currentUser} onRefreshData={onRefreshData} />} />
-        <Route path="waste-requests" element={<WasteRequests materialLots={materialLots} onSubmitOffer={onSubmitOffer} recyclerProfile={currentUser} onRefreshData={onRefreshData} />} />
+        <Route path="dashboard" element={<RecyclerDashboard materialLots={materialLots} offers={offers} transactions={transactions} recyclerProfile={currentUser} onRefreshData={onRefreshData} />} />
+        <Route path="waste-requests" element={<WasteRequests materialLots={materialLots} offers={offers} onSubmitOffer={onSubmitOffer} recyclerProfile={currentUser} onRefreshData={onRefreshData} />} />
+        <Route path="waste-requests/:lotId" element={<RequestDetails materialLots={materialLots} offers={offers} onAcceptOffer={onAcceptOffer} />} />
+        <Route path="requests/:requestId" element={<RequestDetails materialLots={materialLots} offers={offers} onAcceptOffer={onAcceptOffer} />} />
         <Route path="matches" element={<Navigate to="/recycler/waste-requests" replace />} />
         <Route path="transactions" element={<RecyclerTransactions transactions={transactions} />} />
-        <Route path="compliance" element={<Navigate to="/recycler/dashboard" replace />} />
+        <Route path="transactions/:transactionId" element={<TransactionDetails transactions={transactions} />} />
+        <Route path="compliance" element={<Compliance recyclerProfile={currentUser} onRefreshData={onRefreshData} />} />
         <Route path="profile" element={<RecyclerProfile currentUser={currentUser} onProfileUpdated={onUserUpdated} />} />
         <Route path="notifications" element={<RecyclerNotifications />} />
       </Route>

@@ -322,7 +322,7 @@ export default function MyRequests({ materialLots = mockWasteLots, offers = mock
                   {/* Actions */}
                   <div className="pt-3 border-t-2 border-[#D6E8DF] flex items-center justify-between">
                     <span className="text-[11px] text-[#555555] font-semibold truncate max-w-[140px]">
-                      {request.location}
+                      {request.collectionAddress || request.location || '—'}
                     </span>
 
                     <button

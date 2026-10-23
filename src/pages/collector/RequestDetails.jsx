@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
   ArrowLeft, MapPin, Scale, Clock, ShieldCheck, 
   CheckCircle2, AlertTriangle, FileText, Send, DollarSign, 
@@ -19,7 +19,12 @@ export default function RequestDetails({
   const { requestId, lotId } = useParams();
   const currentId = requestId || lotId;
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, tCategory, tStatus } = useTranslation();
+
+  const isRecycler = location.pathname.startsWith('/recycler');
+  const backRequestsUrl = isRecycler ? '/recycler/waste-requests' : '/collector/requests';
+  const backTransactionsUrl = isRecycler ? '/recycler/transactions' : '/collector/transactions';
 
   const [localLot, setLocalLot] = useState(null);
   const [localOffers, setLocalOffers] = useState([]);
@@ -90,8 +95,8 @@ export default function RequestDetails({
       <div className="bg-[#F5FBF7] p-12 rounded-lg border-2 border-[#D6E8DF] text-center space-y-4 max-w-xl mx-auto">
         <h2 className="text-xl font-bold text-[#222222]">{t('requestNotFoundTitle')}</h2>
         <p className="text-xs text-[#555555]">{t('requestNotFoundDesc')}</p>
-        <Link to="/collector/requests" className="text-xs font-bold text-[#1F6F5F] underline">
-          {t('returnToRequests')}
+        <Link to={backRequestsUrl} className="text-xs font-bold text-[#1F6F5F] underline">
+          {isRecycler ? t('navWasteRequests') : t('returnToRequests')}
         </Link>
       </div>
     );
@@ -152,11 +157,11 @@ export default function RequestDetails({
       {/* Top Header & Navigation */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate('/collector/requests')}
+          onClick={() => navigate(backRequestsUrl)}
           className="px-4 py-2 text-xs font-bold text-[#222222] bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg hover:border-[#B8D9C8] transition flex items-center gap-2 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 text-[#1F6F5F]" />
-          <span>{t('backToRequests', 'Back to My Requests')}</span>
+          <span>{isRecycler ? t('navWasteRequests') : t('backToRequests', 'Back to My Requests')}</span>
         </button>
 
         <StatusBadge status={isAcceptedState && request.status !== 'COMPLETED' ? 'OFFER_ACCEPTED' : request.status} />
@@ -170,7 +175,7 @@ export default function RequestDetails({
             <span>{actionMessage.text}</span>
           </div>
           <Link
-            to="/collector/transactions"
+            to={backTransactionsUrl}
             className="px-3.5 py-1.5 bg-[#1F6F5F] hover:bg-[#2FA084] text-white rounded-lg text-xs font-bold transition"
           >
             {t('viewTransactions', 'View Transactions →')}
@@ -272,7 +277,7 @@ export default function RequestDetails({
               <span className="text-[10px] font-bold uppercase text-[#555555] block">Pickup Location</span>
               <p className="font-bold text-[#222222] flex items-start gap-1">
                 <MapPin className="w-3.5 h-3.5 text-[#1F6F5F] shrink-0 mt-0.5" />
-                <span>{request.collectionAddress || request.location || 'Chennai Hub'}</span>
+                <span>{request.collectionAddress || request.location || 'Not specified'}</span>
               </p>
               {request.cityDistrict && (
                 <span className="text-[11px] text-[#555555] block">City/District: {request.cityDistrict}</span>
@@ -288,10 +293,15 @@ export default function RequestDetails({
             </div>
 
             <div className="space-y-1">
-              <span className="text-[10px] font-bold uppercase text-[#555555] block">Hazardous / Battery Condition</span>
-              <p className="font-bold text-[#222222]">{request.hazardousCondition || 'No known batteries or hazardous materials'}</p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-bold uppercase text-[#555555] block">Hazardous / Battery Condition</span>
+                <span className="text-[9px] font-bold text-[#B45309] bg-[#FEF3C7] border border-[#FCD34D] px-1.5 py-0.5 rounded">
+                  {request.hazardousAssessmentStatus || 'Requires Verification'}
+                </span>
+              </div>
+              <p className="font-bold text-xs text-[#222222]">{request.hazardousCondition || 'Electronic components may contain hazardous substances; physical verification is required.'}</p>
               {request.hazardousConditionDetails && (
-                <p className="text-[11px] text-[#555555]">{request.hazardousConditionDetails}</p>
+                <p className="text-[11px] text-[#555555] mt-1 bg-white p-2 rounded border border-[#D6E8DF]">{request.hazardousConditionDetails}</p>
               )}
             </div>
           </div>

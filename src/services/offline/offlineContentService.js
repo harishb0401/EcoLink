@@ -143,7 +143,10 @@ export async function seedInitialOfflineCache() {
  */
 export async function getCachedSafetyGuidance(categoryName) {
   try {
-    const item = await db.cachedSafetyGuidance.get(categoryName);
+    let item = await db.cachedSafetyGuidance.get(categoryName);
+    if (!item && categoryName === 'Batteries') {
+      item = await db.cachedSafetyGuidance.get('Lithium / Lead Batteries');
+    }
     if (item) return item;
     // Fallback to first available
     const first = await db.cachedSafetyGuidance.toCollection().first();

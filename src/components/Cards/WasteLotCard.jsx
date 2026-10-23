@@ -4,13 +4,15 @@ import { FileText, MapPin, Scale, Clock, ArrowRight } from 'lucide-react';
 import StatusBadge from '../StatusBadge';
 import { useTranslation } from '../../i18n';
 
-export default function WasteLotCard({ lot, onViewDetails, onOpenOffers }) {
+export default function WasteLotCard({ lot, onViewDetails, onOpenOffers, actionLabel, detailUrl }) {
   const { t, tCategory } = useTranslation();
   if (!lot) return null;
 
   const qty = lot.quantity || lot.totalWeightKg || 1;
   const unit = lot.unit || 'kg';
   const val = lot.agreedTotalValue || lot.estimatedLotValue || (qty * (lot.benchmarkPrice || 350));
+  const lotId = lot.id || lot.lotId || lot.lot_id;
+  const targetUrl = detailUrl || `/collector/requests/${lotId}`;
 
   return (
     <div className="bg-[#F5FBF7] p-5 rounded-lg border-2 border-[#D6E8DF] hover:border-[#B8D9C8] transition-colors flex flex-col justify-between space-y-4">
@@ -21,7 +23,7 @@ export default function WasteLotCard({ lot, onViewDetails, onOpenOffers }) {
               {tCategory(lot.category)}
             </span>
             <h3 className="text-base font-bold text-[#222222] mt-1.5">{lot.material || lot.category}</h3>
-            <span className="text-xs font-mono text-[#555555]">{lot.id}</span>
+            <span className="text-xs font-mono text-[#555555]">{lotId}</span>
           </div>
           <StatusBadge status={lot.status} />
         </div>
@@ -37,7 +39,7 @@ export default function WasteLotCard({ lot, onViewDetails, onOpenOffers }) {
           </div>
           <div className="flex items-center gap-1.5 col-span-2">
             <MapPin className="w-3.5 h-3.5 text-[#1F6F5F]" />
-            <span className="truncate">{t('nodeLabel')}: <strong className="text-[#222222]">{lot.location || "Chennai SIDCO Hub"}</strong></span>
+            <span className="truncate">{t('nodeLabel')}: <strong className="text-[#222222]">{lot.collectionAddress || lot.location || "Collector Hub"}</strong></span>
           </div>
         </div>
 
@@ -60,20 +62,32 @@ export default function WasteLotCard({ lot, onViewDetails, onOpenOffers }) {
       </div>
 
       <div className="flex items-center gap-2 pt-2 border-t-2 border-[#D6E8DF]">
-        <Link
-          to={`/collector/requests/${lot.id}`}
-          className="flex-1 py-2 text-center text-xs font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] hover:border-[#B8D9C8] rounded-lg transition flex items-center justify-center gap-1 cursor-pointer"
-        >
-          <FileText className="w-3.5 h-3.5" />
-          <span>{t('viewDetails')}</span>
-        </Link>
+        {onViewDetails ? (
+          <button
+            type="button"
+            onClick={() => onViewDetails(lot)}
+            className="flex-1 py-2 text-center text-xs font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] hover:border-[#B8D9C8] rounded-lg transition flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>{t('viewDetails')}</span>
+          </button>
+        ) : (
+          <Link
+            to={targetUrl}
+            className="flex-1 py-2 text-center text-xs font-bold text-[#1F6F5F] bg-white border-2 border-[#D6E8DF] hover:border-[#B8D9C8] rounded-lg transition flex items-center justify-center gap-1 cursor-pointer"
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>{t('viewDetails')}</span>
+          </Link>
+        )}
 
         {onOpenOffers && (
           <button
+            type="button"
             onClick={() => onOpenOffers(lot)}
-            className="px-3 py-2 text-xs font-bold text-white bg-[#1F6F5F] hover:bg-[#2FA084] rounded-lg transition flex items-center gap-1 cursor-pointer"
+            className="px-3 py-2 text-xs font-bold text-white bg-[#1F6F5F] hover:bg-[#2FA084] rounded-lg transition flex items-center gap-1 cursor-pointer shrink-0"
           >
-            <span>{t('statusOFFER_RECEIVED')}</span>
+            <span>{actionLabel || t('statusOFFER_RECEIVED')}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         )}

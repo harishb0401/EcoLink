@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Bell, ShoppingBag, ShieldCheck, DollarSign, Clock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Bell, ShoppingBag, ShieldCheck, DollarSign, Clock, AlertCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { mockNotifications } from '../../data/mockData';
 import { useTranslation } from '../../i18n';
 
 export default function RecyclerNotifications() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [list, setList] = useState([
     {
       id: 'NOTIF-REC-1',
@@ -12,7 +14,8 @@ export default function RecyclerNotifications() {
       message: '120 kg of Motherboards & PCB Assemblies registered in Guindy by Apex Scrap.',
       type: 'STREAM',
       time: '15 mins ago',
-      unread: true
+      unread: true,
+      link: '/recycler/waste-requests'
     },
     {
       id: 'NOTIF-REC-2',
@@ -20,7 +23,8 @@ export default function RecyclerNotifications() {
       message: 'Your bid of ₹380/kg on Lot EW-2026-001245 has been accepted. Escrow ₹45,600 locked.',
       type: 'MATCH',
       time: '1 hour ago',
-      unread: true
+      unread: true,
+      link: '/recycler/transactions'
     },
     {
       id: 'NOTIF-REC-3',
@@ -28,12 +32,20 @@ export default function RecyclerNotifications() {
       message: 'Automated CPCB Form-2 manifest compiled for dispatch batch #DSP-401.',
       type: 'COMPLIANCE',
       time: 'Yesterday',
-      unread: false
+      unread: false,
+      link: '/recycler/compliance'
     }
   ]);
 
   const markAllRead = () => {
     setList(list.map(n => ({ ...n, unread: false })));
+  };
+
+  const handleNotificationClick = (item) => {
+    setList(list.map(n => n.id === item.id ? { ...n, unread: false } : n));
+    if (item.link) {
+      navigate(item.link);
+    }
   };
 
   return (
@@ -58,7 +70,8 @@ export default function RecyclerNotifications() {
         {list.map((item) => (
           <div
             key={item.id}
-            className={`p-5 rounded-lg border-2 transition flex items-start gap-4 ${
+            onClick={() => handleNotificationClick(item)}
+            className={`p-5 rounded-lg border-2 transition flex items-start gap-4 cursor-pointer hover:border-[#1F6F5F] ${
               item.unread
                 ? 'bg-[#EFF8F2] border-[#B8D9C8]'
                 : 'bg-[#F5FBF7] border-[#D6E8DF]'
@@ -83,6 +96,8 @@ export default function RecyclerNotifications() {
               </div>
               <p className="text-xs text-[#555555] leading-relaxed">{t(item.message)}</p>
             </div>
+
+            <ArrowRight className="w-4 h-4 text-[#555555] shrink-0 self-center" />
           </div>
         ))}
       </div>

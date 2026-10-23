@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, DollarSign, CheckCircle2, Download, ShieldCheck, FileText, Calendar, Building, MapPin } from 'lucide-react';
 import { mockTransactions } from '../../data/mockData';
 import { useTranslation } from '../../i18n';
@@ -7,7 +7,11 @@ import { useTranslation } from '../../i18n';
 export default function TransactionDetails({ transactions = mockTransactions }) {
   const { transactionId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+
+  const isRecycler = location.pathname.startsWith('/recycler');
+  const backUrl = isRecycler ? '/recycler/transactions' : '/collector/transactions';
 
   const allTx = transactions || mockTransactions;
   const tx = allTx.find(t => t.id === transactionId) || allTx[0];
@@ -16,7 +20,7 @@ export default function TransactionDetails({ transactions = mockTransactions }) 
     return (
       <div className="bg-[#F5FBF7] p-12 rounded-lg border-2 border-[#D6E8DF] text-center space-y-4">
         <h2 className="text-xl font-bold text-[#222222]">{t('transactionsTitle')}</h2>
-        <Link to="/collector/transactions" className="text-xs font-bold text-[#1F6F5F] underline">
+        <Link to={backUrl} className="text-xs font-bold text-[#1F6F5F] underline">
           {t('backToDashboard')}
         </Link>
       </div>
@@ -28,11 +32,11 @@ export default function TransactionDetails({ transactions = mockTransactions }) 
       {/* Top Bar */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate('/collector/transactions')}
+          onClick={() => navigate(backUrl)}
           className="px-4 py-2 text-xs font-bold text-[#222222] bg-[#F5FBF7] border-2 border-[#D6E8DF] rounded-lg hover:border-[#B8D9C8] transition flex items-center gap-2 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 text-[#1F6F5F]" />
-          <span>{t('backToDashboard')}</span>
+          <span>{isRecycler ? t('navTransactions') : t('backToDashboard')}</span>
         </button>
 
         <span className="text-xs font-bold text-[#1F6F5F] bg-[#EFF8F2] border-2 border-[#B8D9C8] px-3 py-1 rounded-md flex items-center gap-1">
@@ -67,7 +71,7 @@ export default function TransactionDetails({ transactions = mockTransactions }) 
           <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-2">
             <span className="text-[10px] font-bold text-[#555555] uppercase block">{t('collectorLabel')}</span>
             <h4 className="text-sm font-bold text-[#222222]">{tx.collectorName || tx.collector?.fullName || 'Collector'}</h4>
-            <p className="text-[#555555]">{t('storageLocationHub')}: {tx.collectorLocation || tx.location || 'Local Collection Hub'}</p>
+            <p className="text-[#555555]">{t('storageLocationHub')}: {tx.collectorLocation || tx.location || tx.collector?.location || 'Not specified'}</p>
           </div>
 
           <div className="p-4 bg-white rounded-lg border-2 border-[#D6E8DF] space-y-2">
