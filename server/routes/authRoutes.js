@@ -1,6 +1,6 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
-import { register, login, getMe, updateProfile, logout } from '../controllers/authController.js';
+import { register, login, getMe, updateProfile, logout, verifyRecyclerRegistration } from '../controllers/authController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { validateRequest } from '../middleware/validationMiddleware.js';
 import { registerValidationRules, loginValidationRules } from '../validators/authValidator.js';
@@ -19,6 +19,19 @@ const authRateLimiter = rateLimit({
   legacyHeaders: false
 });
 
+// Registry lookup rate limiter (generous to allow interactive typing)
+const lookupRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 120,
+  message: {
+    success: false,
+    message: 'Too many registration lookup attempts. Please try again in a few minutes.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+router.get('/verify-registration', lookupRateLimiter, verifyRecyclerRegistration);
 router.post('/register', authRateLimiter, registerValidationRules, validateRequest, register);
 router.post('/login', authRateLimiter, loginValidationRules, validateRequest, login);
 router.get('/me', authMiddleware, getMe);

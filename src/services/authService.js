@@ -81,6 +81,29 @@ export const authService = {
   },
 
   /**
+   * Look up and verify official recycler registration number
+   * Auto-fetches facility name and checks if already registered
+   */
+  async verifyRegistration(regNumber) {
+    if (!regNumber || !regNumber.trim()) {
+      return { success: false, message: 'Registration number is required.' };
+    }
+
+    try {
+      const response = await api.get(`/auth/verify-registration?regNumber=${encodeURIComponent(regNumber.trim().toUpperCase())}`);
+      return response;
+    } catch (err) {
+      if (err.data) {
+        return err.data;
+      }
+      return {
+        success: false,
+        message: err.message || 'Error verifying registration number with registry.'
+      };
+    }
+  },
+
+  /**
    * Retrieve cached user object synchronously
    */
   getCurrentUser() {
