@@ -199,6 +199,29 @@ export async function register(req, res, next) {
         });
       }
 
+      // Enforce single user per Authorized Business / Facility Name:
+      // Check both the official business_name from the registry AND any supplied facility/organization name
+      const candidateFacilityNames = Array.from(new Set([
+        authRecord.business_name,
+        facilityName,
+        organizationName
+      ].filter(name => name && name.trim()))).map(s => s.trim());
+
+      for (const fName of candidateFacilityNames) {
+        const { data: duplicateFacility } = await supabase
+          .from('recycler_profiles')
+          .select('id, user_id, facility_name')
+          .ilike('facility_name', fName)
+          .maybeSingle();
+
+        if (duplicateFacility) {
+          return res.status(409).json({
+            success: false,
+            message: `The Authorized Business / Facility "${fName}" is already registered to an existing account. Only a single user can sign up per Authorized Business / Facility.`
+          });
+        }
+      }
+
       verifiedRegistryRecord = authRecord;
     }
 
@@ -290,7 +313,7 @@ export async function register(req, res, next) {
 
     // 3. If recycler, create recycler_profiles entry with VERIFIED status
     if (role === 'recycler') {
-      const resolvedFacilityName = facilityName || organizationName || verifiedRegistryRecord?.business_name || fullName || 'Registered Recycler Facility';
+      const resolvedFacilityName = verifiedRegistryRecord?.business_name || organizationName || facilityName || fullName || 'Registered Recycler Facility';
       const resolvedFacilityAddress = facilityAddress || address || location || locationText || 'Tamil Nadu';
       const canonicalRegNumber = verifiedRegistryRecord?.registration_number || normalizedRegNumber;
       const resolvedCategories = categories || acceptedCategories || [];
@@ -624,4 +647,139 @@ export async function logout(req, res) {
     message: 'Logged out successfully.'
   });
 }
+
+/**
+ * Verify Recycler Registration Number & Auto-Fetch Authorized Business/Facility Name
+ * Enforces that a single user can sign up per Authorized Business / Facility Name
+ * GET /api/auth/verify-registration?regNumber=...
+ */
+export async function verifyRecyclerRegistration(req, res, next) {
+  try {
+    if (!supabase) {
+      return res.status(500).json({ success: false, message: 'Database client is unavailable' });
+    }
+
+    const rawRegNumber = req.query.regNumber || req.query.registrationNumber || req.query.id;
+    if (!rawRegNumber || !rawRegNumber.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Official Recycler Registration Number is required.'
+      });
+    }
+
+    const normalizedRegNumber = rawRegNumber.trim().toUpperCase();
+
+    // Basic format validation
+    if (!/^[A-Z0-9\/-]{3,50}$/.test(normalizedRegNumber)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid registration number format. Please enter valid alphanumeric characters with hyphens/slashes.'
+      });
+    }
+
+    // 1. Look up in authorized_recycler_registrations
+    const { data: authRecord, error: regCheckErr } = await supabase
+      .from('authorized_recycler_registrations')
+      .select('*')
+      .ilike('registration_number', normalizedRegNumber)
+      .maybeSingle();
+
+    if (regCheckErr) {
+      if (regCheckErr.code === '42P01' || regCheckErr.message?.includes('authorized_recycler_registrations')) {
+        return res.status(503).json({
+          success: false,
+          message: 'Authorized recycler registry is not yet initialized in Supabase.'
+        });
+      }
+      console.error('Registry verification query error:', regCheckErr);
+      return res.status(500).json({
+        success: false,
+        message: 'Error verifying registration number against authorized registry.'
+      });
+    }
+
+    if (!authRecord) {
+      return res.status(404).json({
+        success: false,
+        found: false,
+        message: `Registration number "${normalizedRegNumber}" was not found in the official authorized recycler registry.`
+      });
+    }
+
+    const businessName = authRecord.business_name || 'Authorized Recycler Facility';
+
+    if (authRecord.is_active === false) {
+      return res.status(403).json({
+        success: false,
+        found: true,
+        isActive: false,
+        businessName,
+        message: `Registration number "${normalizedRegNumber}" (${businessName}) is marked inactive or suspended by regulatory authorities.`
+      });
+    }
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (authRecord.valid_from && authRecord.valid_from > todayStr) {
+      return res.status(403).json({
+        success: false,
+        found: true,
+        businessName,
+        message: `Registration number "${normalizedRegNumber}" is not valid until ${authRecord.valid_from}.`
+      });
+    }
+
+    if (authRecord.valid_until && authRecord.valid_until < todayStr) {
+      return res.status(403).json({
+        success: false,
+        found: true,
+        isExpired: true,
+        businessName,
+        message: `Registration number "${normalizedRegNumber}" expired on ${authRecord.valid_until}.`
+      });
+    }
+
+    // 2. Single User Per Authorized Facility / Registration constraint:
+    // Check if an existing recycler account is already using this business/facility name OR registration number
+    const { data: duplicateClaimByReg } = await supabase
+      .from('recycler_profiles')
+      .select('id, user_id, facility_name, cpcb_reg_number')
+      .ilike('cpcb_reg_number', normalizedRegNumber)
+      .maybeSingle();
+
+    const { data: duplicateClaimByFacility } = await supabase
+      .from('recycler_profiles')
+      .select('id, user_id, facility_name, cpcb_reg_number')
+      .ilike('facility_name', businessName.trim())
+      .maybeSingle();
+
+    if (duplicateClaimByReg || duplicateClaimByFacility) {
+      return res.status(409).json({
+        success: false,
+        found: true,
+        alreadyRegistered: true,
+        businessName,
+        registrationNumber: authRecord.registration_number,
+        message: `The Authorized Business / Facility "${businessName}" is already registered to an existing user account. Only a single user can sign up per Authorized Business / Facility.`
+      });
+    }
+
+    // 3. Return verified registry data
+    return res.status(200).json({
+      success: true,
+      found: true,
+      alreadyRegistered: false,
+      data: {
+        registrationNumber: authRecord.registration_number,
+        businessName,
+        issuingAuthority: authRecord.issuing_authority || 'CPCB / State Pollution Control Board',
+        validFrom: authRecord.valid_from,
+        validUntil: authRecord.valid_until,
+        isActive: authRecord.is_active
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
 
