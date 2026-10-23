@@ -105,6 +105,8 @@ export async function createWasteLot(req, res, next) {
       longitude
     } = req.body;
 
+    const isMarketBidsMode = req.body.isOpenToMarket === true || req.body.pricingMode === 'MARKET_BIDS';
+
     // Quantity is optional (fill if needed, not compulsory)
     const parsedQuantity = (quantity !== undefined && quantity !== null && quantity !== '')
       ? parseFloat(quantity)
@@ -119,10 +121,11 @@ export async function createWasteLot(req, res, next) {
       return res.status(400).json({ success: false, message: 'Total weight is required and must be greater than 0' });
     }
 
-    const parsedExpectedPrice = expectedPrice !== undefined && expectedPrice !== null && expectedPrice !== ''
+    const parsedExpectedPrice = (expectedPrice !== undefined && expectedPrice !== null && expectedPrice !== '')
       ? parseFloat(expectedPrice)
       : null;
-    if (parsedExpectedPrice !== null && parsedExpectedPrice < 0) {
+
+    if (!isMarketBidsMode && (parsedExpectedPrice !== null && parsedExpectedPrice < 0)) {
       return res.status(400).json({ success: false, message: 'Expected price cannot be negative' });
     }
 
@@ -131,6 +134,44 @@ export async function createWasteLot(req, res, next) {
     const finalAddress = collectionAddress || locationText || location || 'Chennai Hub';
     const finalLocation = cityDistrict ? `${finalAddress}, ${cityDistrict}` : finalAddress;
 
+    // 1. Authoritative server-side classification and pricing calculation
+    const classification = classifyEWaste(finalMaterial || finalCategory);
+    const clientBenchmark = parseFloat(req.body.benchmarkPrice);
+    const clientTolerance = parseFloat(req.body.tolerance);
+    const resolvedBenchmark = (clientBenchmark && clientBenchmark > 0) ? clientBenchmark : (classification.benchmarkPrice || 350);
+    const resolvedTolerance = (clientTolerance && clientTolerance > 0) ? (clientTolerance > 1 ? clientTolerance / 100 : clientTolerance) : (classification.tolerance || 0.25);
+    const pricingRange = calculateFairPriceRange(resolvedBenchmark, resolvedTolerance, parsedWeight);
+    const calculatedEstimatedValue = Math.round(resolvedBenchmark * parsedWeight);
+
+    const minTotalVal = Math.round(pricingRange.lowerLimit * parsedWeight);
+    const maxTotalVal = Math.round(pricingRange.upperLimit * parsedWeight);
+
+    // STRICT PRICE VALIDATION (Collector Expected Selling Price)
+    if (!isMarketBidsMode) {
+      if (parsedExpectedPrice === null || isNaN(parsedExpectedPrice)) {
+        return res.status(400).json({
+          success: false,
+          message: `Your expected selling price must be between ₹${minTotalVal.toLocaleString()} and ₹${maxTotalVal.toLocaleString()} to register this waste lot.`
+        });
+      }
+
+      if (parsedExpectedPrice < minTotalVal || parsedExpectedPrice > maxTotalVal) {
+        return res.status(400).json({
+          success: false,
+          message: `Your expected selling price must be between ₹${minTotalVal.toLocaleString()} and ₹${maxTotalVal.toLocaleString()} to register this waste lot.`,
+          error: 'PRICE_OUTSIDE_PERMITTED_RANGE',
+          allowedPriceRange: {
+            minPrice: pricingRange.lowerLimit,
+            maxPrice: pricingRange.upperLimit,
+            minTotalVal,
+            maxTotalVal
+          }
+        });
+      }
+    }
+
+    const finalStoredPrice = isMarketBidsMode ? 0 : parsedExpectedPrice;
+
     // Structured description incorporating all details
     const detailLines = [
       description ? description.trim() : null,
@@ -138,7 +179,7 @@ export async function createWasteLot(req, res, next) {
       category === 'Other' && categoryOther ? `[Custom Item Type: ${categoryOther}]` : null,
       storageCondition ? `[Storage: ${storageCondition}${storageConditionDetails ? ` - ${storageConditionDetails}` : ''}]` : null,
       hazardousCondition ? `[Hazardous/Battery: ${hazardousCondition}${hazardousConditionDetails ? ` - ${hazardousConditionDetails}` : ''}]` : null,
-      parsedExpectedPrice !== null ? `[Expected Price: ₹${parsedExpectedPrice}]` : null,
+      isMarketBidsMode ? '[Pricing Mode: Open to Market Bids]' : `[Expected Price: ₹${finalStoredPrice}]`,
       preferredPickupDate ? `[Preferred Pickup: ${preferredPickupDate}]` : null,
       clientOperationId ? `[OpId: ${clientOperationId}]` : null
     ].filter(Boolean);
@@ -158,6 +199,7 @@ export async function createWasteLot(req, res, next) {
         .maybeSingle();
 
       if (existingLot) {
+        const isLotMarket = existingLot.expected_price === 0 || (existingLot.description && existingLot.description.includes('Open to Market Bids'));
         return res.status(200).json({
           success: true,
           message: 'Lot already synchronized (idempotent)',
@@ -170,12 +212,13 @@ export async function createWasteLot(req, res, next) {
             locationText: existingLot.location,
             totalWeightKg: existingLot.total_weight_kg || existingLot.quantity,
             benchmarkPrice: existingLot.benchmark_rate,
-            estimatedLotValue: Math.round((existingLot.benchmark_rate || 0) * (existingLot.quantity || 0)),
+            estimatedLotValue: isLotMarket ? Math.round((existingLot.benchmark_rate || 0) * (existingLot.quantity || 0)) : (existingLot.expected_price || Math.round((existingLot.benchmark_rate || 0) * (existingLot.quantity || 0))),
             collectionAddress: existingLot.collection_address || existingLot.location,
             cityDistrict: existingLot.city_district || '',
             storageCondition: existingLot.storage_condition || 'Indoor storage',
             hazardousCondition: existingLot.hazardous_condition || 'No known batteries or hazardous materials',
-            expectedPrice: existingLot.expected_price || 0,
+            expectedPrice: isLotMarket ? 0 : (existingLot.expected_price !== undefined && existingLot.expected_price !== null ? parseFloat(existingLot.expected_price) : 0),
+            isOpenToMarket: isLotMarket,
             preferredPickupDate: existingLot.preferred_pickup_date || existingLot.pickup_date,
             imageUrls: existingLot.image_urls || [],
             notes: existingLot.notes || ''
@@ -183,13 +226,6 @@ export async function createWasteLot(req, res, next) {
         });
       }
     }
-
-    // 1. Authoritative server-side classification and pricing calculation
-    const classification = classifyEWaste(finalMaterial || finalCategory);
-    const resolvedBenchmark = classification.benchmarkPrice || 350;
-    const resolvedTolerance = classification.tolerance || 0.25;
-    const pricingRange = calculateFairPriceRange(resolvedBenchmark, resolvedTolerance, parsedWeight);
-    const calculatedEstimatedValue = Math.round(resolvedBenchmark * parsedWeight);
 
     // 2. Generate unique collision-safe Lot ID (format: EWL-2026-XXXXXX)
     let lotId = generateLotId();
@@ -225,6 +261,7 @@ export async function createWasteLot(req, res, next) {
       benchmark_rate: resolvedBenchmark,
       min_fair_price: pricingRange.lowerLimit,
       max_fair_price: pricingRange.upperLimit,
+      expected_price: finalStoredPrice,
       status: initialStatus,
       image_urls: sanitizedImages,
       created_at: new Date().toISOString(),
@@ -234,12 +271,12 @@ export async function createWasteLot(req, res, next) {
     const extendedPayload = {
       ...basePayload,
       total_weight_kg: parsedWeight,
-      estimated_total_value: calculatedEstimatedValue,
+      estimated_total_value: isMarketBidsMode ? calculatedEstimatedValue : finalStoredPrice,
       collection_address: finalAddress,
       city_district: cityDistrict || '',
       storage_condition: storageCondition || 'Indoor storage',
       hazardous_condition: hazardousCondition || 'No known batteries or hazardous materials',
-      expected_price: parsedExpectedPrice,
+      expected_price: finalStoredPrice,
       preferred_pickup_date: preferredPickupDate ? new Date(preferredPickupDate).toISOString() : null,
       notes: notes || ''
     };
@@ -274,7 +311,7 @@ export async function createWasteLot(req, res, next) {
         lot_id: newLot.id,
         event_type: 'CREATED',
         title: 'Waste Lot Registered',
-        description: `${parsedQuantity} ${unit} (${parsedWeight} kg) ${finalMaterial} declared. Benchmark ₹${resolvedBenchmark}/${unit} (Fair Range ₹${pricingRange.lowerLimit}–₹${pricingRange.upperLimit}/${unit}).`,
+        description: `${parsedQuantity || parsedWeight} ${unit} (${parsedWeight} kg) ${finalMaterial} declared. Benchmark ₹${resolvedBenchmark}/${unit} (Fair Range ₹${pricingRange.lowerLimit}–₹${pricingRange.upperLimit}/${unit}). Expected: ${isMarketBidsMode ? 'Open to Market Bids' : `₹${finalStoredPrice}`}.`,
         created_at: new Date().toISOString()
       },
       {
@@ -297,18 +334,21 @@ export async function createWasteLot(req, res, next) {
         locationText: newLot.location,
         totalWeightKg: newLot.total_weight_kg || parsedWeight,
         benchmarkPrice: newLot.benchmark_rate,
-        estimatedLotValue: Math.round((newLot.benchmark_rate || 0) * (parsedWeight || 0)),
+        estimatedLotValue: isMarketBidsMode ? Math.round((newLot.benchmark_rate || 0) * (parsedWeight || 0)) : finalStoredPrice,
         collectionAddress: newLot.collection_address || finalAddress,
         cityDistrict: newLot.city_district || cityDistrict || '',
         storageCondition: newLot.storage_condition || storageCondition || 'Indoor storage',
         hazardousCondition: newLot.hazardous_condition || hazardousCondition || 'No known batteries or hazardous materials',
-        expectedPrice: newLot.expected_price !== undefined ? newLot.expected_price : parsedExpectedPrice,
+        expectedPrice: isMarketBidsMode ? 0 : (newLot.expected_price !== undefined && newLot.expected_price !== null ? parseFloat(newLot.expected_price) : finalStoredPrice),
+        isOpenToMarket: isMarketBidsMode,
         preferredPickupDate: newLot.preferred_pickup_date || preferredPickupDate,
         imageUrls: newLot.image_urls || sanitizedImages,
         notes: newLot.notes || notes || '',
         allowedPriceRange: {
           minPrice: newLot.min_fair_price,
           maxPrice: newLot.max_fair_price,
+          minTotalVal,
+          maxTotalVal,
           rangeLabel: `₹${newLot.min_fair_price}–₹${newLot.max_fair_price}/${newLot.unit}`
         }
       }
@@ -346,9 +386,11 @@ export async function getMyWasteLots(req, res, next) {
       const activeOffers = (lot.offers || []).filter(o => o.status !== 'CANCELLED');
       const benchmark = lot.benchmark_rate || 350;
       const weight = parseFloat(lot.total_weight_kg || lot.quantity) || 1;
+      const isMarket = lot.expected_price === 0 || (lot.description && lot.description.includes('Open to Market Bids'));
+      const storedPrice = lot.expected_price !== undefined && lot.expected_price !== null ? parseFloat(lot.expected_price) : 0;
       const estimatedVal = lot.estimated_total_value !== undefined && lot.estimated_total_value !== null
         ? lot.estimated_total_value
-        : Math.round(benchmark * weight);
+        : (isMarket ? Math.round(benchmark * weight) : (storedPrice > 0 ? storedPrice : Math.round(benchmark * weight)));
 
       return {
         ...lot,
@@ -370,7 +412,8 @@ export async function getMyWasteLots(req, res, next) {
         cityDistrict: lot.city_district || '',
         storageCondition: lot.storage_condition || 'Indoor storage',
         hazardousCondition: lot.hazardous_condition || 'No known batteries or hazardous materials',
-        expectedPrice: lot.expected_price || 0,
+        expectedPrice: storedPrice,
+        isOpenToMarket: isMarket,
         preferredPickupDate: lot.preferred_pickup_date || lot.pickup_date,
         imageUrls: lot.image_urls || [],
         notes: lot.notes || '',
@@ -450,9 +493,11 @@ export async function getAvailableWasteLots(req, res, next) {
     const formatted = matchedLots.map(lot => {
       const benchmark = lot.benchmark_rate || 350;
       const weight = parseFloat(lot.total_weight_kg || lot.quantity) || 1;
+      const isMarket = lot.expected_price === 0 || (lot.description && lot.description.includes('Open to Market Bids'));
+      const storedPrice = lot.expected_price !== undefined && lot.expected_price !== null ? parseFloat(lot.expected_price) : 0;
       const estimatedVal = lot.estimated_total_value !== undefined && lot.estimated_total_value !== null
         ? lot.estimated_total_value
-        : Math.round(benchmark * weight);
+        : (isMarket ? Math.round(benchmark * weight) : (storedPrice > 0 ? storedPrice : Math.round(benchmark * weight)));
 
       return {
         ...lot,
@@ -471,7 +516,8 @@ export async function getAvailableWasteLots(req, res, next) {
         benchmarkRate: benchmark,
         estimatedLotValue: estimatedVal,
         estimatedTotalValue: estimatedVal,
-        expectedPrice: lot.expected_price || 0,
+        expectedPrice: storedPrice,
+        isOpenToMarket: isMarket,
         collectionAddress: lot.collection_address || lot.location,
         cityDistrict: lot.city_district || '',
         storageCondition: lot.storage_condition || 'Indoor storage',
@@ -540,9 +586,11 @@ export async function getWasteLotById(req, res, next) {
 
     const benchmark = lot.benchmark_rate || 350;
     const weight = parseFloat(lot.total_weight_kg || lot.quantity) || 1;
+    const isMarket = lot.expected_price === 0 || (lot.description && lot.description.includes('Open to Market Bids'));
+    const storedPrice = lot.expected_price !== undefined && lot.expected_price !== null ? parseFloat(lot.expected_price) : 0;
     const estimatedVal = lot.estimated_total_value !== undefined && lot.estimated_total_value !== null
       ? lot.estimated_total_value
-      : Math.round(benchmark * weight);
+      : (isMarket ? Math.round(benchmark * weight) : (storedPrice > 0 ? storedPrice : Math.round(benchmark * weight)));
 
     const formatted = {
       ...lot,
@@ -561,11 +609,12 @@ export async function getWasteLotById(req, res, next) {
       benchmarkRate: benchmark,
       estimatedLotValue: estimatedVal,
       estimatedTotalValue: estimatedVal,
+      expectedPrice: storedPrice,
+      isOpenToMarket: isMarket,
       collectionAddress: lot.collection_address || lot.location,
       cityDistrict: lot.city_district || '',
       storageCondition: lot.storage_condition || 'Indoor storage',
       hazardousCondition: lot.hazardous_condition || 'No known batteries or hazardous materials',
-      expectedPrice: lot.expected_price || 0,
       preferredPickupDate: lot.preferred_pickup_date || lot.pickup_date,
       imageUrls: lot.image_urls || [],
       notes: lot.notes || '',

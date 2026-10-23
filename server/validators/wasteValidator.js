@@ -37,9 +37,23 @@ export const createWasteLotValidationRules = [
     .isFloat({ gt: 0 })
     .withMessage('Total weight must be greater than 0'),
   body('expectedPrice')
-    .optional({ nullable: true, checkFalsy: true })
-    .isFloat({ min: 0 })
-    .withMessage('Expected selling price must be greater than or equal to 0'),
+    .optional({ nullable: true })
+    .custom((val) => {
+      if (val !== undefined && val !== null && val !== '') {
+        const num = parseFloat(val);
+        if (isNaN(num) || num < 0) {
+          throw new Error('Expected selling price must be greater than or equal to 0');
+        }
+      }
+      return true;
+    }),
+  body('isOpenToMarket')
+    .optional()
+    .isBoolean()
+    .withMessage('isOpenToMarket must be a boolean'),
+  body('pricingMode')
+    .optional()
+    .trim(),
   body('collectionAddress')
     .optional()
     .trim(),

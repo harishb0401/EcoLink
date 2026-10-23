@@ -297,12 +297,17 @@ export default function WasteRequests({
                     <span className="text-[#555555]">Estimated Total Value:</span>
                     <span className="font-bold text-[#1F6F5F]">₹{estimatedValue.toLocaleString()}</span>
                   </div>
-                  {lot.expectedPrice !== undefined && Number(lot.expectedPrice) > 0 && (
+                  {lot.isOpenToMarket || Number(lot.expectedPrice) === 0 ? (
                     <div className="flex justify-between items-center text-[11px] pt-1 border-t border-[#D6E8DF]">
                       <span className="text-[#555555]">Expected Selling Price:</span>
+                      <span className="font-bold text-[#1F6F5F] bg-[#EFF8F2] border border-[#B8D9C8] px-2 py-0.5 rounded text-[10px]">Open to Market Bids</span>
+                    </div>
+                  ) : lot.expectedPrice !== undefined && Number(lot.expectedPrice) > 0 ? (
+                    <div className="flex justify-between items-center text-[11px] pt-1 border-t border-[#D6E8DF]">
+                      <span className="text-[#555555]">Collector's Expected Price:</span>
                       <span className="font-bold text-[#222222]">₹{Number(lot.expectedPrice).toLocaleString()}</span>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
 
@@ -346,10 +351,18 @@ export default function WasteRequests({
             </div>
 
             <form onSubmit={handleSendBid} className="space-y-4 text-xs">
-              <div className="p-3.5 bg-white border-2 border-[#D6E8DF] rounded-lg space-y-1 text-[#555555]">
+              <div className="p-3.5 bg-white border-2 border-[#D6E8DF] rounded-lg space-y-1.5 text-[#555555]">
                 <p><strong className="text-[#222222]">{t('materialCategory', 'Material')}:</strong> {selectedLotForBid.material}</p>
                 <p><strong className="text-[#222222]">{t('weight', 'Weight')}:</strong> {selectedLotForBid.quantity || selectedLotForBid.totalWeightKg} {selectedLotForBid.unit || 'kg'}</p>
                 <p><strong className="text-[#222222]">{t('benchmarkPriceLabel', 'Benchmark Rate')}:</strong> ₹{selectedLotForBid.benchmarkPrice || 350} / {selectedLotForBid.unit || 'kg'}</p>
+                <div className="pt-1.5 border-t border-[#D6E8DF] flex justify-between items-center text-xs">
+                  <strong className="text-[#222222]">Collector's Expected Price:</strong>
+                  {selectedLotForBid.isOpenToMarket || Number(selectedLotForBid.expectedPrice) === 0 ? (
+                    <span className="font-bold text-[#1F6F5F] bg-[#EFF8F2] border border-[#B8D9C8] px-2 py-0.5 rounded text-[10px]">Open to Market Bids</span>
+                  ) : (
+                    <span className="font-bold text-[#222222] text-sm">₹{Number(selectedLotForBid.expectedPrice).toLocaleString()}</span>
+                  )}
+                </div>
               </div>
 
               <div>

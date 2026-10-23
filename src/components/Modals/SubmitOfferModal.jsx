@@ -119,6 +119,17 @@ export default function SubmitOfferModal({
               <span className="font-bold text-[#1F6F5F]">₹{lot.lowerLimit}–₹{lot.upperLimit}/kg</span>
             </div>
           </div>
+
+          <div className="bg-white p-2.5 rounded-lg border-2 border-[#D6E8DF] flex items-center justify-between text-xs">
+            <span className="font-bold text-[#555555]">Collector's Expected Selling Price:</span>
+            {lot.isOpenToMarket || Number(lot.expectedPrice) === 0 ? (
+              <span className="font-bold text-[#1F6F5F] bg-[#EFF8F2] border border-[#B8D9C8] px-2 py-0.5 rounded text-[10px]">Open to Market Bids</span>
+            ) : lot.expectedPrice !== undefined && Number(lot.expectedPrice) > 0 ? (
+              <span className="font-bold text-[#222222] text-sm">₹{Number(lot.expectedPrice).toLocaleString()}</span>
+            ) : (
+              <span className="text-[#555555] italic">Flexible</span>
+            )}
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

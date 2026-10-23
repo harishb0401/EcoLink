@@ -175,6 +175,7 @@ export default function App() {
         hazardousCondition: newLotData.hazardousCondition,
         hazardousConditionDetails: newLotData.hazardousConditionDetails,
         expectedPrice: newLotData.expectedPrice,
+        isOpenToMarket: Boolean(newLotData.isOpenToMarket),
         preferredPickupDate: newLotData.preferredPickupDate,
         imageUrls: newLotData.imageUrls || [],
         quotedPrice: newLotData.quotedPrice || newLotData.expectedPrice,

@@ -77,8 +77,13 @@ export default function RegisterWaste({
   // SECTION 3: PRICING AND PICKUP DETAILS
   // ==========================================
   // 12. Expected Selling Price (₹)
-  const [expectedPrice, setExpectedPrice] = useState('8750');
+  const [expectedPrice, setExpectedPrice] = useState(() => {
+    const defaultCat = structuredEWasteCategories[0];
+    const defaultBenchmark = defaultCat?.benchmarkPrice || 650;
+    return String(Math.round(defaultBenchmark * 25)); // 16,250 baseline for 25kg PCB
+  });
   const [isCustomPrice, setIsCustomPrice] = useState(false);
+  const [isOpenToMarket, setIsOpenToMarket] = useState(false);
 
   // 13. Preferred Pickup Date / Time
   const getMinDateTime = () => {
@@ -148,12 +153,16 @@ export default function RegisterWaste({
     setCategory(newCat);
     if (newCat === 'Other') {
       setMaterial('Custom / Other E-Waste Stream');
+      if (!isCustomPrice && !isOpenToMarket) {
+        const w = parseFloat(totalWeightKg) || 1;
+        setExpectedPrice(String(Math.round(250 * w)));
+      }
     } else {
       const matched = structuredEWasteCategories.find(c => c.name === newCat);
       if (matched) {
         setMaterial(matched.description || matched.name);
         const newBenchmark = (benchmarkPrices || []).find(p => p.category === newCat)?.referencePrice || matched.benchmarkPrice || 350;
-        if (!isCustomPrice) {
+        if (!isCustomPrice && !isOpenToMarket) {
           const w = parseFloat(totalWeightKg) || 1;
           setExpectedPrice(String(Math.round(newBenchmark * w)));
         }
@@ -174,7 +183,7 @@ export default function RegisterWaste({
   // Total Weight Change Handler - Completely separate from Quantity
   const handleWeightChange = (val) => {
     setTotalWeightKg(val);
-    if (!isCustomPrice) {
+    if (!isCustomPrice && !isOpenToMarket) {
       const num = parseFloat(val) || 0;
       setExpectedPrice(String(Math.round(benchmarkRate * num)));
     }
@@ -318,7 +327,21 @@ export default function RegisterWaste({
 
   const minTotalVal = Math.round(minPrice * parsedWeight);
   const maxTotalVal = Math.round(maxPrice * parsedWeight);
-  const isPriceCleared = parsedPrice >= minTotalVal && parsedPrice <= maxTotalVal;
+
+  // Strict fair price validation checks (inclusive boundaries)
+  const hasEnteredPrice = expectedPrice !== '' && !isNaN(parsedPrice);
+  const isPriceValid = isOpenToMarket 
+    ? true 
+    : (hasEnteredPrice && parsedPrice >= minTotalVal && parsedPrice <= maxTotalVal);
+
+  const isPriceBelowMin = !isOpenToMarket && hasEnteredPrice && parsedPrice < minTotalVal;
+  const isPriceAboveMax = !isOpenToMarket && hasEnteredPrice && parsedPrice > maxTotalVal;
+  const isPriceInvalid = !isOpenToMarket && (
+    !hasEnteredPrice || 
+    parsedPrice < minTotalVal || 
+    parsedPrice > maxTotalVal
+  );
+  const isPriceCleared = isPriceValid;
 
   // Validation function
   const validateForm = () => {
@@ -346,10 +369,17 @@ export default function RegisterWaste({
     if (!cityDistrict.trim()) {
       errors.cityDistrict = 'City / District is required.';
     }
-    const p = parseFloat(expectedPrice);
-    if (isNaN(p) || p < 0) {
-      errors.expectedPrice = 'Expected selling price cannot be negative.';
+    
+    // Validate collector expected selling price against EcoLink Fair Pricing Reference Engine
+    if (!isOpenToMarket) {
+      const p = parseFloat(expectedPrice);
+      if (isNaN(p) || expectedPrice.trim() === '') {
+        errors.expectedPrice = `Please enter an expected selling price between ₹${minTotalVal.toLocaleString()} and ₹${maxTotalVal.toLocaleString()}.`;
+      } else if (p < minTotalVal || p > maxTotalVal) {
+        errors.expectedPrice = `Your expected selling price must be between ₹${minTotalVal.toLocaleString()} and ₹${maxTotalVal.toLocaleString()} to register this waste lot.`;
+      }
     }
+
     if (!preferredPickupDate) {
       errors.preferredPickupDate = 'Please select a preferred pickup date and time.';
     }
@@ -363,6 +393,12 @@ export default function RegisterWaste({
     e.preventDefault();
     setSubmitError('');
 
+    // Hard block if price is outside the permitted fair range
+    if (!isOpenToMarket && isPriceInvalid) {
+      setSubmitError(`Price Outside Permitted Range: Your expected selling price must be between ₹${minTotalVal.toLocaleString()} and ₹${maxTotalVal.toLocaleString()} to register this waste lot.`);
+      return;
+    }
+
     if (!validateForm()) {
       return;
     }
@@ -375,6 +411,8 @@ export default function RegisterWaste({
       const parsedQty = (quantity !== undefined && quantity !== null && String(quantity).trim() !== '')
         ? parseFloat(quantity)
         : null;
+
+      const exactEnteredPrice = isOpenToMarket ? 0 : parsedPrice;
 
       const payload = {
         category: finalCategory,
@@ -395,15 +433,18 @@ export default function RegisterWaste({
         storageConditionDetails: storageConditionDetails.trim(),
         hazardousCondition,
         hazardousConditionDetails: hazardousConditionDetails.trim(),
-        expectedPrice: parseFloat(expectedPrice),
-        quotedPrice: unitRate,
+        expectedPrice: exactEnteredPrice,
+        isOpenToMarket,
+        pricingMode: isOpenToMarket ? 'MARKET_BIDS' : 'FIXED_EXPECTED',
+        quotedPrice: isOpenToMarket ? displayBenchmark : unitRate,
         benchmarkPrice: displayBenchmark,
+        tolerance: displayTolerance,
         preferredPickupDate,
         collectionDate: preferredPickupDate.split('T')[0],
         notes: notes.trim(),
-        estimatedLotValue: parseFloat(expectedPrice) || Math.round(displayBenchmark * parseFloat(totalWeightKg)),
+        estimatedLotValue: isOpenToMarket ? Math.round(displayBenchmark * parseFloat(totalWeightKg)) : exactEnteredPrice,
         isPreCleared: isPriceCleared,
-        clearanceBadge: isPriceCleared ? 'PRE-CLEARED ✅' : 'NOT CLEARED ❌',
+        clearanceBadge: isOpenToMarket ? 'MARKET BIDS ⚖️' : (isPriceCleared ? 'PRE-CLEARED ✅' : 'NOT CLEARED ❌'),
         allowedPriceRange: {
           minPrice,
           maxPrice,
@@ -775,18 +816,20 @@ export default function RegisterWaste({
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <label className="text-xs font-bold text-[#222222] block">
+                  <label htmlFor="expected-price-input" className="text-xs font-bold text-[#222222] block">
                     Collector's Expected Selling Price (₹) <span className="text-red-500">*</span>
                   </label>
                   <p className="text-[11px] text-[#555555]">
-                    Enter your total expected selling price for the whole batch. (Enter 0 if open to market bids).
+                    Enter your total expected selling price for the whole batch. Must be within the permitted fair range (₹{minTotalVal.toLocaleString()} – ₹{maxTotalVal.toLocaleString()}).
                   </p>
                 </div>
                 <button
                   type="button"
+                  id="set-fair-baseline-btn"
                   onClick={() => {
                     const fairEstimate = Math.round(displayBenchmark * parsedWeight);
                     setExpectedPrice(String(fairEstimate));
+                    setIsOpenToMarket(false);
                     setIsCustomPrice(false);
                   }}
                   className="text-[11px] font-bold text-[#1F6F5F] hover:text-[#2FA084] hover:underline flex items-center gap-1 cursor-pointer self-start sm:self-auto"
@@ -796,21 +839,83 @@ export default function RegisterWaste({
                 </button>
               </div>
 
+              {/* Open to Market Bids option */}
+              <div className="flex items-center gap-2.5 p-3 bg-gray-50 border-2 border-[#D6E8DF] rounded-lg">
+                <input
+                  id="open-to-market-checkbox"
+                  type="checkbox"
+                  checked={isOpenToMarket}
+                  onChange={(e) => {
+                    const checked = e.target.checked;
+                    setIsOpenToMarket(checked);
+                    if (checked) {
+                      setIsCustomPrice(true);
+                    }
+                  }}
+                  className="w-4 h-4 text-[#1F6F5F] border-2 border-[#D6E8DF] rounded focus:ring-[#1F6F5F] cursor-pointer"
+                />
+                <label htmlFor="open-to-market-checkbox" className="text-xs font-bold text-[#222222] cursor-pointer select-none">
+                  Open to Market Bids <span className="text-[11px] font-normal text-[#555555]">(Allow authorized recyclers to submit competitive offers without an asking price)</span>
+                </label>
+              </div>
+
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-[#555555]">₹</span>
                 <input
+                  id="expected-price-input"
                   type="number"
-                  min="0"
+                  min={minTotalVal}
+                  max={maxTotalVal}
                   step="any"
-                  value={expectedPrice}
+                  disabled={isOpenToMarket}
+                  value={isOpenToMarket ? '' : expectedPrice}
+                  placeholder={isOpenToMarket ? 'Open to Market Bids mode active' : `Enter amount between ₹${minTotalVal.toLocaleString()} and ₹${maxTotalVal.toLocaleString()}`}
                   onChange={(e) => {
                     setExpectedPrice(e.target.value);
                     setIsCustomPrice(true);
                   }}
-                  className={`w-full bg-white border-2 ${fieldErrors.expectedPrice ? 'border-red-400' : 'border-[#D6E8DF]'} rounded-lg pl-8 pr-4 py-3 text-sm font-bold text-[#222222] focus:border-[#B8D9C8] focus:outline-none`}
+                  className={`w-full bg-white border-2 ${
+                    isOpenToMarket
+                      ? 'border-[#D6E8DF] bg-gray-100 text-gray-500 cursor-not-allowed'
+                      : isPriceInvalid
+                        ? 'border-red-500 focus:border-red-500 ring-1 ring-red-500'
+                        : 'border-[#6FCF97] focus:border-[#1F6F5F] ring-1 ring-[#6FCF97]'
+                  } rounded-lg pl-8 pr-4 py-3 text-sm font-bold text-[#222222] focus:outline-none transition-colors`}
                 />
               </div>
-              {fieldErrors.expectedPrice && (
+
+              {/* Immediate Validation Messages */}
+              {!isOpenToMarket && isPriceInvalid && (
+                <div id="price-validation-error" className="flex items-start gap-1.5 p-3 bg-red-50 border-2 border-red-300 rounded-lg text-xs font-bold text-red-700">
+                  <AlertOctagon className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-bold">Price Outside Permitted Range: Your expected selling price must be between ₹{minTotalVal.toLocaleString()} and ₹{maxTotalVal.toLocaleString()} to register this waste lot.</p>
+                    <p className="text-[11px] font-normal text-red-600 mt-0.5">
+                      {isPriceBelowMin 
+                        ? `Entered amount ₹${parsedPrice.toLocaleString()} is below the minimum permitted price of ₹${minTotalVal.toLocaleString()}.` 
+                        : isPriceAboveMax 
+                          ? `Entered amount ₹${parsedPrice.toLocaleString()} is above the maximum permitted price of ₹${maxTotalVal.toLocaleString()}.`
+                          : `Please enter a valid price within the fair benchmark range.`}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {!isOpenToMarket && isPriceValid && (
+                <div id="price-validation-success" className="flex items-center gap-1.5 p-3 bg-green-50 border-2 border-[#6FCF97] rounded-lg text-xs font-bold text-[#1F6F5F]">
+                  <CheckCircle2 className="w-4 h-4 text-[#1F6F5F] shrink-0" />
+                  <span>Price Accepted: Your expected selling price is within the permitted fair range (₹{minTotalVal.toLocaleString()} – ₹{maxTotalVal.toLocaleString()}).</span>
+                </div>
+              )}
+
+              {isOpenToMarket && (
+                <div id="price-validation-market" className="flex items-center gap-1.5 p-3 bg-[#EFF8F2] border-2 border-[#B8D9C8] rounded-lg text-xs font-bold text-[#1F6F5F]">
+                  <CheckCircle2 className="w-4 h-4 text-[#1F6F5F] shrink-0" />
+                  <span>Open to Market Bids: This lot will be listed without a fixed price, allowing verified recyclers to submit competitive market bids.</span>
+                </div>
+              )}
+
+              {fieldErrors.expectedPrice && !isPriceInvalid && (
                 <p className="text-[11px] text-red-600 mt-1">{fieldErrors.expectedPrice}</p>
               )}
 
@@ -836,18 +941,28 @@ export default function RegisterWaste({
                   </div>
                   <div className="bg-white p-3 rounded-lg border-2 border-[#D6E8DF]">
                     <span className="text-[10px] uppercase font-bold text-[#555555] block">Effective Unit Rate</span>
-                    <span className="text-sm font-bold text-[#222222]">₹{parsedWeight > 0 ? (parsedPrice / parsedWeight).toFixed(1) : '0'} / kg</span>
+                    <span className="text-sm font-bold text-[#222222]">
+                      {isOpenToMarket 
+                        ? 'Market Bids' 
+                        : `₹${parsedWeight > 0 && hasEnteredPrice ? (parsedPrice / parsedWeight).toFixed(1) : '0'} / kg`}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between bg-white p-2.5 rounded-lg border-2 border-[#D6E8DF] text-xs">
                   <span className="font-bold text-[#222222]">Expected Price Status:</span>
-                  <span className={`px-2.5 py-0.5 rounded text-[11px] font-bold border-2 ${
-                    isPriceCleared 
-                      ? 'border-[#6FCF97] text-[#1F6F5F] bg-green-50' 
-                      : 'border-[#D6E8DF] text-[#555555] bg-gray-50'
+                  <span className={`px-2.5 py-1 rounded text-[11px] font-bold border-2 ${
+                    isOpenToMarket
+                      ? 'border-[#1F6F5F] text-[#1F6F5F] bg-[#EFF8F2]'
+                      : isPriceValid 
+                        ? 'border-[#6FCF97] text-[#1F6F5F] bg-green-50' 
+                        : 'border-red-400 text-red-700 bg-red-50'
                   }`}>
-                    {isPriceCleared ? 'PRE-CLEARED FAIR RATE ✅' : 'CUSTOM QUOTE (Recyclers Will Review)'}
+                    {isOpenToMarket 
+                      ? 'OPEN TO MARKET BIDS' 
+                      : isPriceValid 
+                        ? 'PRICE ACCEPTED (Within Fair Range) ✅' 
+                        : 'PRICE OUTSIDE PERMITTED RANGE ❌'}
                   </span>
                 </div>
               </div>
@@ -980,8 +1095,9 @@ export default function RegisterWaste({
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto px-8 py-3.5 bg-[#1F6F5F] hover:bg-[#2FA084] disabled:opacity-60 text-white rounded-lg font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              id="register-waste-submit-btn"
+              disabled={isSubmitting || (!isOpenToMarket && isPriceInvalid)}
+              className="w-full sm:w-auto px-8 py-3.5 bg-[#1F6F5F] hover:bg-[#2FA084] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
               {isSubmitting ? (
                 <>

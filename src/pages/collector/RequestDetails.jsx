@@ -248,7 +248,13 @@ export default function RequestDetails({
               <DollarSign className="w-3.5 h-3.5 text-[#1F6F5F]" /> Expected Price
             </span>
             <span className="text-base font-bold text-[#222222]">
-              {request.expectedPrice !== undefined && Number(request.expectedPrice) > 0 ? `₹${Number(request.expectedPrice).toLocaleString()}` : 'Flexible'}
+              {request.isOpenToMarket || Number(request.expectedPrice) === 0 ? (
+                <span className="text-sm font-bold text-[#1F6F5F] bg-[#EFF8F2] border border-[#B8D9C8] px-2 py-0.5 rounded">Open to Market Bids</span>
+              ) : request.expectedPrice !== undefined && Number(request.expectedPrice) > 0 ? (
+                `₹${Number(request.expectedPrice).toLocaleString()}`
+              ) : (
+                'Flexible'
+              )}
             </span>
             <span className="text-[10px] text-[#555555] block">Collector Expectation</span>
           </div>

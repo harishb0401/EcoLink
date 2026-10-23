@@ -41,9 +41,21 @@ export default function WasteLotCard({ lot, onViewDetails, onOpenOffers }) {
           </div>
         </div>
 
-        <div className="mt-3 p-2.5 bg-white rounded-lg border-2 border-[#D6E8DF] flex items-center justify-between text-xs font-medium">
-          <span className="text-[#555555]">{t('benchmarkPriceLabel')}:</span>
-          <span className="text-[#1F6F5F] font-bold">₹{lot.benchmarkPrice || 350}/{unit} (₹{val.toLocaleString()})</span>
+        <div className="mt-3 p-2.5 bg-white rounded-lg border-2 border-[#D6E8DF] flex flex-col gap-1.5 text-xs font-medium">
+          <div className="flex items-center justify-between">
+            <span className="text-[#555555]">{t('benchmarkPriceLabel')}:</span>
+            <span className="text-[#1F6F5F] font-bold">₹{lot.benchmarkPrice || 350}/{unit} (₹{val.toLocaleString()})</span>
+          </div>
+          <div className="flex items-center justify-between pt-1 border-t border-[#D6E8DF]">
+            <span className="text-[#555555]">Expected Price:</span>
+            {lot.isOpenToMarket || Number(lot.expectedPrice) === 0 ? (
+              <span className="font-bold text-[#1F6F5F] bg-[#EFF8F2] border border-[#B8D9C8] px-2 py-0.5 rounded text-[10px]">Open to Market Bids</span>
+            ) : lot.expectedPrice !== undefined && Number(lot.expectedPrice) > 0 ? (
+              <span className="font-bold text-[#222222]">₹{Number(lot.expectedPrice).toLocaleString()}</span>
+            ) : (
+              <span className="text-[#555555] italic">Standard</span>
+            )}
+          </div>
         </div>
       </div>
 
